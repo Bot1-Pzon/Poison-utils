@@ -61,23 +61,24 @@ class Colors:
 class Console:
 	"Funzionalità per facilitare l'interazione con il terminale."
 
-	debug = None
-	logs = None
-	logs_file_path = None
-	logs_file = None
-	screen_cleaning_method = None
-	colored_output = None
+	debug:bool = False
+	do_we_use_logs: bool = False
+	logs_file_path: str = ""
+	logs_file: "File" = None
+	do_we_use_time_stamps: bool = False
+	screen_cleaning_method: str = None
+	colored_output: bool = None
 
 
 	@staticmethod
-	def error(error_message: str, *, show_to_console: bool = False, colored_output: bool = False, time_stamp: bool = True) -> None:
+	def error(error_message: str, *, show_to_console: bool = False, colored_output: bool = False, time_stamp: bool = do_we_use_time_stamps) -> None:
 		''' Metodo per la presentazione degli errori non fatali.
 		Per presentare errori fatali usare: "Console.fatal_error()". '''
 
 		colored_output = Console.colored_output	# Sovrascrizione della variabile locale con la variabile della classe.
 		time_stamp_value = datetime.now().strftime("%H:%M:%S")	# Time stamp per i log.
 
-		if Console.logs is True :
+		if Console.do_we_use_logs is True and os.path.exists(Console.logs_file_path):	# Se i log sono attivi e il file di log esiste:
 			with open(Console.logs_file_path, "a") as logs_file:
 				logs_file.write(f"\t[{time_stamp_value}] - Errore: {error_message}.\n")
 
@@ -100,8 +101,8 @@ class Console:
 	@staticmethod
 	def fatal_error(error_message: str, *, colored_output: bool = False) -> None:
 
-		if Console.logs is True and os.path.exists(Console.logs_file_path):
-			time_stamp_value = datetime.now().strftime("%H:%M:%S")	# Time stamp per i log.
+		if Console.do_we_use_logs is True and os.path.exists(Console.logs_file_path):	# Se i log sono attivi e il file di log esiste:
+			time_stamp_value = datetime.now().strftime("%H:%M:%S")	#* valore temporale per i log.
 
 			with open(Console.logs_file_path, "a") as logs_file:
 				logs_file.write(f"\t[{time_stamp_value}] - FATAL ERROR: {error_message}.\n")
@@ -120,7 +121,42 @@ class Console:
 
 
 	@staticmethod
-	def config(*, debug: bool = False,  logs: bool = False, logs_file_path: str = None, screen_cleaning_method: str = "auto", colored_output: bool = True) -> None:
+	def create_logs_folder(logs_path: str = "./", logs_directory_name: str = "Logs", logs_file_name: str = "logs.log") -> None:
+
+		initial_time_stamp = datetime.now().strftime("%d/%m/%Y - %H:%M")
+
+		if logs_path is None:	# Se il percorso file dei log non è stato impostato:
+			Console.fatal_error('Specificare il percorso del file di log presso il metodo: "Console.config(logs_file_path=...)"')
+
+		if not os.path.exists(logs_path):	# Se il percorso file dei log non esiste:
+			Console.fatal_error(f'Il percorso: "{logs_path}" non esiste, specificarne un altro a: "Console.config(logs_file_path=...)')
+
+		if not os.path.exists(os.path.join(logs_path, logs_directory_name)):	# Se la cartella dei logs non esiste:
+			os.makedirs(os.path.join(logs_path, logs_directory_name))	#* Crea la cartella dei logs.
+
+		logs_path = os.path.join(logs_path, logs_directory_name, logs_file_name)
+
+		#TODO: {os.path.realpath(__file__)} Se esiste un metodo mostrare il file principale, non la libreria.
+		time_header = f'< ==== | {initial_time_stamp} | ==== >\nEsecuzione del file: "{os.path.normpath(os.path.realpath(__file__))}".\n\n'
+
+		if not os.path.exists(logs_path):	# Se il file di log non esiste:
+			time_stamp_value = datetime.now().strftime("%H:%M:%S")
+			time_header =  time_header + f'\t[{time_stamp_value}] - File dei logs creato.\n'
+
+		else:
+			time_header = '\n' + time_header
+
+		with open(logs_path, "a") as logs_file:	#* Creazione del file dei log.
+			logs_file.write(time_header)	#* Scrittura dell'intestazione temporale nel file dei log.
+
+		Console.logs_file = File(logs_path)
+
+		Console.logs_file_path = logs_path
+		Console.do_we_use_logs = True
+
+
+	@staticmethod
+	def config(*, debug: bool = False,  logs: bool = False, logs_file_path: str = None, do_we_use_time_stamps: bool = False, screen_cleaning_method: str = "auto", colored_output: bool = True) -> None:
 		''' Metodo di configurazione della funzionalità Console.
 
 		- È possibile attivare il debug: "Console.config(debug=True)".
@@ -140,39 +176,13 @@ class Console:
 Sono supportati solo i parametri "auto", "cls" e "clear", non "{screen_cleaning_method}" inserito dall'utente''')
 
 		if logs is True:
-			initial_time_stamp = datetime.now().strftime("%d/%m/%Y - %H:%M")
+			Console.do_we_use_logs = True
 
-			logs_directory_name = "Logs"
-			logs_file_name = "logs.log"
-
-			if logs_file_path is None:	# Se il percorso file dei log non è stato impostato:
-				Console.fatal_error('Specificare il percorso del file di log presso il metodo: "Console.config(logs_file_path=...)"')
-
-			if not os.path.exists(logs_file_path):	# Se il percorso file dei log non esiste:
-				Console.fatal_error(f'Il percorso: "{logs_file_path}" non esiste, specificarne un altro a: "Console.config(logs_file_path=...)')
-
-			if not os.path.exists(os.path.join(logs_file_path, logs_directory_name)):	# Se la cartella dei logs non esiste:
-					os.makedirs(os.path.join(logs_file_path, logs_directory_name))	#* Crea la cartella dei logs.
-
-			logs_file_path = os.path.join(logs_file_path, logs_directory_name, logs_file_name)
-
-			#TODO: {os.path.realpath(__file__)} Se esiste un metodo mostrare il file principale, non la libreria.
-
-			time_header = f'\n< ==== | {initial_time_stamp} | ==== >\nEsecuzione del file: "{os.path.normpath(os.path.realpath(__file__))}".\n\n'
-
-			if not os.path.exists(logs_file_path):	# Se il file di log non esiste:
-				time_stamp_value = datetime.now().strftime("%H:%M:%S")
-				time_header = f'< ==== | {initial_time_stamp} | ==== >\nEsecuzione del file: "{os.path.normpath(os.path.realpath(__file__))}".\n\n\t[{time_stamp_value}] - File dei logs creato.\n'
-
-			with open(logs_file_path, "a") as logs_file:	#* Creazione del file dei log.
-				logs_file.write(time_header)	#* Scrittura dell'intestazione temporale nel file dei log.
-
-			Console.logs_file = File(logs_file_path)
-
-			Console.logs_file_path = logs_file_path
+			if logs_file_path != None:
+				Console.create_logs_folder(logs_path = logs_file_path)
 
 		Console.debug = debug
-		Console.logs = logs
+		Console.do_we_use_time_stamps = do_we_use_time_stamps
 
 
 	@staticmethod
@@ -205,7 +215,8 @@ Sono supportati solo i parametri "auto", "cls" e "clear", non "{screen_cleaning_
 				else:
 					print(f"\n  > {console_message}.\n")
 
-		if Console.logs is True:
+		if Console.do_we_use_logs is True:
+
 			if os.path.exists(Console.logs_file_path):
 				with open(Console.logs_file_path, "a") as logs_file:
 					logs_file.write(f"\t[{time_stamp_value}] - {console_message}.\n")
@@ -213,7 +224,7 @@ Sono supportati solo i parametri "auto", "cls" e "clear", non "{screen_cleaning_
 			else:
 				Console.fatal_error(f'Impossibile accedere al file: "{Console.logs_file_path}", precedentemente creato')
 
-		elif Console.logs is None:
+		elif Console.do_we_use_logs is None:
 			Console.fatal_error('Mancata esecuzione del metodo: "Console.config()"')
 
 
@@ -237,6 +248,9 @@ Sono supportati solo i parametri "auto", "cls" e "clear", non "{screen_cleaning_
 
 			elif os.name == 'nt':
 				os.system('cls')	# Metodo di pulizia per sistemi Windows.
+
+			else:
+				Console.fatal_error(f'Nel sistema operativo \"{os.name}\" la pulizia dello schermo non è supportata')
 
 		elif Console.screen_cleaning_method == "clear":
 			os.system("clear")
@@ -356,7 +370,7 @@ class File:
 			self.content = file.read()
 
 
-	def write(self, content: str, binary: bool = True) -> None:
+	def write(self, content: str, binary: bool = False) -> None:
 		" Scrivere nel file. "
 
 		self.content = content
@@ -375,7 +389,7 @@ class File:
 
 		content = rf"{content}"
 		if len(content) > 25:
-			Console.log(f'Scrittura di "{content[0:25]}..." al file "{self.path}" completata')
+			Console.log(f'Scrittura al file "{self.path}" completata')
 
 		else:
 			Console.log(f'Scrittura di "{content}" al file "{self.path}" completata')
@@ -402,17 +416,17 @@ class File:
 
 	@staticmethod
 	def create_complete_path(path: str, file_name: str = None) -> "File":
-		''' Crea il percorso e il file se non esistono.\n
-			Si possono specificare il percorso file e il nome del fiele separatamente. '''
+		''' Crea il percorso completo di cartelle e file.\n
+			Se si desidera creare solo cartelle non specificare \"file_name\".'''
 
-		if file_name != None:
-			path = os.path.join(path, file_name)
+		if file_name != None:	# Se il nome del file è stato specificato:
+			path = os.path.join(path, file_name)	#* Aggiungilo al percorso da creare.
 
-		if os.path.exists(path):
-			Console.fatal_error(f'Il percorso "{path}" esiste gia')
+		if os.path.exists(path):	# Se il percorso file non esiste:
+			Console.fatal_error(f'Il percorso "{path}" esiste gia')	#* Lancia un errore.
 
 		if not os.path.exists(os.path.dirname(path)):	# Se la cartella contenitrice non esiste:
-			os.makedirs(os.path.dirname(path))	#* Creazione cartella contenitrice
+			os.makedirs(os.path.dirname(path))	#* Creazione cartella contenitrice.
 			Console.log(f'Cartella "{os.path.dirname(path)}" creata')
 
 		if file_name == None:
@@ -667,7 +681,7 @@ def swap(a, b):
 # Metadati:
 
 __doc__ = "docstring w.i.p."
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 spell = '''Ain't it hard to stumble
 and land in the wrong side of the lagoon,
