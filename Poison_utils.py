@@ -17,7 +17,7 @@ if __name__ == "__main__":
 # =================================================================================================================== #
 
 class Colors:
-	"Funzionalità per la stampa colorata."
+	"Funzionalità per manipolare l'output del terminale, ad esempio con la stampa colorata."
 
 	reset = "\033[0m"
 	bold = "\033[01m"
@@ -351,7 +351,7 @@ Sono supportati solo i parametri "auto", "cls" e "clear", non "{screen_cleaning_
 # =================================================================================================================== #
 
 class File:
-	" Classe per gestire i file. "
+	"Funzionalità per la gestione dei file per gestire i file."
 
 	def __init__(self, path: str) -> None:
 
@@ -404,6 +404,7 @@ class File:
 
 
 	def __str__(self) -> str:
+		"Rappresentazione in stringa di un file, comprende il suo nome e percorso."
 		return f'''[{self.name} -> '{self.path}']'''
 
 
@@ -442,7 +443,7 @@ class File:
 
 	@staticmethod
 	def delete_file_at_path(path: str) -> None:
-		''' Eliminare il file al percorso dato '''
+		''' Eliminare il file al percorso dato, wrapper di "os.remove()" '''
 
 		if os.path.exists(path):
 			os.remove(path)
@@ -583,6 +584,7 @@ class Math:
 # =================================================================================================================== #
 
 class Physic:
+	"Classe per il calcolo con grandezze fisiche tenendo conto delle incertezze."
 
 	supported_units = ("km", "hm", "dam", "m", "dm", "cm", "mm", "km²", "hm²", "dam²", "m²", "dm²", "cm²", "mm²")
 
@@ -681,7 +683,7 @@ def swap(a, b):
 # Metadati:
 
 __doc__ = "docstring w.i.p."
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
 spell = '''Ain't it hard to stumble
 and land in the wrong side of the lagoon,
