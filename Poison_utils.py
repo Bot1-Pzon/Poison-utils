@@ -9,10 +9,23 @@ import sys
 from random import randint
 from datetime import datetime	# Per le stampe temporali.
 
+
 if __name__ == "__main__":
 
 	print(f'\nErrore: "{os.path.normpath(os.path.basename(__file__))}" è un modulo.\nNon dovresti eseguire questo file direttamente.\n')
 	sys.exit()
+
+
+# Metadati:
+__doc__ = "docstring w.i.p."
+__version__ = "1.0.6"
+
+spell = '''Ain't it hard to stumble
+and land in the wrong side of the lagoon,
+ain't it hard to stumble
+and hope that death didn't get you so soon.
+
+- Poison_8o8'''
 
 # =================================================================================================================== #
 
@@ -63,11 +76,28 @@ class Console:
 
 	debug:bool = False
 	do_we_use_logs: bool = False
-	logs_file_path: str = ""
+	logs_file_path: str = None
 	logs_file: "File" = None
 	do_we_use_time_stamps: bool = False
 	screen_cleaning_method: str = None
 	colored_output: bool = None
+
+
+	def write_to_log_file(message: str, time_stamp: str = None) -> None:
+		" Funzione per la scrittura al file di log. "
+
+		if not os.path.exists(Console.logs_file_path):
+
+			Console.fatal_error(f"Il file di log '{Console.logs_file_path}' non esiste")
+
+		if time_stamp is None:
+			time_stamp_value = datetime.now().strftime("%H:%M:%S")
+
+		else:
+			time_stamp_value = time_stamp
+
+		with open(Console.logs_file_path, "a", encoding = "utf-8") as logs_file:
+				logs_file.write(f"\t[{time_stamp_value}] - {message}.\n")	#* Scrittura al file.
 
 
 	@staticmethod
@@ -78,17 +108,16 @@ class Console:
 		colored_output = Console.colored_output	# Sovrascrizione della variabile locale con la variabile della classe.
 		time_stamp_value = datetime.now().strftime("%H:%M:%S")	# Time stamp per i log.
 
-		if Console.do_we_use_logs is True and os.path.exists(Console.logs_file_path):	# Se i log sono attivi e il file di log esiste:
-			with open(Console.logs_file_path, "a") as logs_file:
-				logs_file.write(f"\t[{time_stamp_value}] - Errore: {error_message}.\n")
+		if Console.do_we_use_logs is True:	# Se i log sono attivi:
+			Console.write_to_log_file(f"ERROR: {error_message}", time_stamp_value)
 
 		if Console.debug is True or show_to_console is True:
 			if Console.colored_output is True or colored_output is True:
 				if time_stamp is True:
-					print(f"\n{Colors.bold}{Colors.bg.orange}  >{Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {error_message}.{Colors.reset}\n")
+					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}[{time_stamp_value}] - {error_message}.{Colors.reset}\n")
 
 				else:
-					print(f"\n{Colors.bold}{Colors.bg.orange}  >{Colors.reset} {Colors.fg.green}{error_message}.{Colors.reset}\n")
+					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}{error_message}.{Colors.reset}\n")
 
 			else:	# Se la stampa colorato non è attiva:
 				if time_stamp is True:
@@ -101,11 +130,12 @@ class Console:
 	@staticmethod
 	def fatal_error(error_message: str, *, colored_output: bool = False) -> None:
 
-		if Console.do_we_use_logs is True and os.path.exists(Console.logs_file_path):	# Se i log sono attivi e il file di log esiste:
+		''' Metodo per la presentazione degli errori fatali.
+		Per presentare errori non fatali usare: "Console.error()". '''
+		if Console.do_we_use_logs is True:	# Se i log sono attivi:
 			time_stamp_value = datetime.now().strftime("%H:%M:%S")	#* valore temporale per i log.
 
-			with open(Console.logs_file_path, "a") as logs_file:
-				logs_file.write(f"\t[{time_stamp_value}] - FATAL ERROR: {error_message}.\n")
+			Console.write_to_log_file(f"FATAL ERROR: {error_message}", time_stamp_value)
 
 		print()
 		print(f"{Colors.bold}{Colors.bg.orange}{Colors.fg.red}<{Colors.reset}{Colors.fg.red}", end="")
@@ -156,7 +186,7 @@ class Console:
 
 
 	@staticmethod
-	def config(*, debug: bool = False,  logs: bool = False, logs_file_path: str = None, do_we_use_time_stamps: bool = False, screen_cleaning_method: str = "auto", colored_output: bool = True) -> None:
+	def config(*, debug: bool = True,  logs: bool = True, logs_file_path: str = None, do_we_use_time_stamps: bool = False, screen_cleaning_method: str = "auto", colored_output: bool = True) -> None:
 		''' Metodo di configurazione della funzionalità Console.
 
 		- È possibile attivare il debug: "Console.config(debug=True)".
@@ -172,21 +202,23 @@ class Console:
 
 		else:	# Se il metodo di pulizia dello schermo non è fra i supportati:
 
-			Console.fatal_error(f'''Errore durante l'esecuzione del metodo: "Console.config()":
-Sono supportati solo i parametri "auto", "cls" e "clear", non "{screen_cleaning_method}" inserito dall'utente''')
+			Console.fatal_error(f'''Errore durante l'esecuzione del metodo: "Console.config()":\nSono supportati solo i parametri "auto", "cls" e "clear", non "{screen_cleaning_method}" inserito dall'utente''')
 
 		if logs is True:
 			Console.do_we_use_logs = True
 
-			if logs_file_path != None:
-				Console.create_logs_folder(logs_path = logs_file_path)
+			if logs_file_path is None:
+				Console.create_logs_folder()
+
+			else:
+				Console.create_logs_folder(logs_file_path)
 
 		Console.debug = debug
 		Console.do_we_use_time_stamps = do_we_use_time_stamps
 
 
 	@staticmethod
-	def log(console_message: str, *, show_to_console: bool = False, time_stamp: bool = False) -> None:
+	def log(console_message: str, *, show_to_console: bool = False, time_stamp: bool = False, end: str = "") -> None:
 		''' Funzionalità per la stampa di informazioni utili a terminale a fini di debug, abilitatile con "Console.config(debug=True)".
 
 		Il parametro "show_to_console" sovrascriverà la configurazione solo per l'istanza dove la sua funzione è stata chiamata. '''
@@ -201,28 +233,27 @@ Sono supportati solo i parametri "auto", "cls" e "clear", non "{screen_cleaning_
 			if Console.colored_output is True:
 
 				if time_stamp is True:
-					#* Stampa colorata con intestazione temporale.
-					print(f"\n{Colors.bold}{Colors.bg.orange}  >{Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}\n")
+
+					if end == "":
+						print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}\n")	#* Stampa colorata con intestazione temporale.
+
+					else:
+						print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}", end = end)
 
 				else:
-					print(f"\n{Colors.bold}{Colors.bg.orange}  >{Colors.reset} {Colors.fg.green}{console_message}.{Colors.reset}\n")
+					print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}{console_message}.{Colors.reset}\n")
 
 			else:
 
 				if time_stamp is True:
-					print(f"\n  > [{time_stamp_value}] - {console_message}.\n")
+					print(f"\n> [{time_stamp_value}] - {console_message}.\n")
 
 				else:
-					print(f"\n  > {console_message}.\n")
+					print(f"\n> {console_message}.\n")
 
 		if Console.do_we_use_logs is True:
 
-			if os.path.exists(Console.logs_file_path):
-				with open(Console.logs_file_path, "a") as logs_file:
-					logs_file.write(f"\t[{time_stamp_value}] - {console_message}.\n")
-
-			else:
-				Console.fatal_error(f'Impossibile accedere al file: "{Console.logs_file_path}", precedentemente creato')
+			Console.write_to_log_file(console_message, time_stamp_value)
 
 		elif Console.do_we_use_logs is None:
 			Console.fatal_error('Mancata esecuzione del metodo: "Console.config()"')
@@ -239,7 +270,7 @@ Sono supportati solo i parametri "auto", "cls" e "clear", non "{screen_cleaning_
 	def clear() -> None:
 		"Metodo per la pulizia del terminale."
 
-		if Console.screen_cleaning_method == None:
+		if Console.screen_cleaning_method is None:
 			Console.fatal_error('Specificare il metodo di pulizia della schermo presso il metodo: "Console.config(screen_cleaning_method=...)"')
 
 		elif Console.screen_cleaning_method == "auto":
@@ -315,9 +346,9 @@ Sono supportati solo i parametri "auto", "cls" e "clear", non "{screen_cleaning_
 		# Generato da I.A.
 
 		try:
-			from prompt_toolkit import prompt	# type: ignore
-			from prompt_toolkit.completion import PathCompleter	# type: ignore
-			from prompt_toolkit.styles import Style	# type: ignore
+			from prompt_toolkit import prompt
+			from prompt_toolkit.completion import PathCompleter
+			from prompt_toolkit.styles import Style
 
 		except ModuleNotFoundError:
 			Console.fatal_error('Mancate il modulo: "prompt_toolkit"')
@@ -420,7 +451,7 @@ class File:
 		''' Crea il percorso completo di cartelle e file.\n
 			Se si desidera creare solo cartelle non specificare \"file_name\".'''
 
-		if file_name != None:	# Se il nome del file è stato specificato:
+		if file_name is not None:	# Se il nome del file è stato specificato:
 			path = os.path.join(path, file_name)	#* Aggiungilo al percorso da creare.
 
 		if os.path.exists(path):	# Se il percorso file non esiste:
@@ -430,7 +461,7 @@ class File:
 			os.makedirs(os.path.dirname(path))	#* Creazione cartella contenitrice.
 			Console.log(f'Cartella "{os.path.dirname(path)}" creata')
 
-		if file_name == None:
+		if file_name is None:
 			os.makedirs(path)
 			Console.log(f'Cartella "{path}" creata')
 
@@ -538,7 +569,7 @@ class List:
 	def duplicates_counter(List: list) -> dict:
 		" Ritorna un dizionario con il numero di occorrenze di ogni elemento nella lista data. "
 
-		counter:dict = {}
+		counter: dict = {}
 
 		for element in List:
 			if element in counter:
@@ -677,17 +708,3 @@ class Physic:
 def swap(a, b):
 	a, b = b, a
 	return a, b
-
-# =================================================================================================================== #
-
-# Metadati:
-
-__doc__ = "docstring w.i.p."
-__version__ = "1.0.5"
-
-spell = '''Ain't it hard to stumble
-and land in the wrong side of the lagoon,
-ain't it hard to stumble
-and hope that death didn't get you so soon.
-
-- Poison_8o8'''
