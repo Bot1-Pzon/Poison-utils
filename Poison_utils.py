@@ -12,13 +12,13 @@ from datetime import datetime	# Per le stampe temporali.
 
 if __name__ == "__main__":
 
-	print(f'\nErrore: "{os.path.normpath(os.path.basename(__file__))}" è un modulo.\nNon dovresti eseguire questo file direttamente.\n')
+	print(f'\n\033[31mErrore\033[0m: \033[44m\033[01m{os.path.normpath(os.path.basename(__file__))}\033[0m è un modulo.\nNon dovresti eseguire questo file direttamente.\n')
 	sys.exit()
 
 
 # Metadati:
 __doc__ = "docstring w.i.p."
-__version__ = "1.0.6"
+__version__ = "1.0.7"
 
 spell = '''Ain't it hard to stumble
 and land in the wrong side of the lagoon,
@@ -83,7 +83,7 @@ class Console:
 	colored_output: bool = None
 
 
-	def write_to_log_file(message: str, time_stamp: str = None) -> None:
+	def write_to_log_file(message: str, time_stamp: str = None, end_of_message: str = None) -> None:
 		" Funzione per la scrittura al file di log. "
 
 		if not os.path.exists(Console.logs_file_path):
@@ -96,35 +96,14 @@ class Console:
 		else:
 			time_stamp_value = time_stamp
 
+		if end_of_message is None:
+			message = f"\t[{time_stamp_value}] - {message}.\n"
+
+		else:
+			message = f"\t[{time_stamp_value}] - {message + end_of_message}"
+
 		with open(Console.logs_file_path, "a", encoding = "utf-8") as logs_file:
-				logs_file.write(f"\t[{time_stamp_value}] - {message}.\n")	#* Scrittura al file.
-
-
-	@staticmethod
-	def error(error_message: str, *, show_to_console: bool = False, colored_output: bool = False, time_stamp: bool = do_we_use_time_stamps) -> None:
-		''' Metodo per la presentazione degli errori non fatali.
-		Per presentare errori fatali usare: "Console.fatal_error()". '''
-
-		colored_output = Console.colored_output	# Sovrascrizione della variabile locale con la variabile della classe.
-		time_stamp_value = datetime.now().strftime("%H:%M:%S")	# Time stamp per i log.
-
-		if Console.do_we_use_logs is True:	# Se i log sono attivi:
-			Console.write_to_log_file(f"ERROR: {error_message}", time_stamp_value)
-
-		if Console.debug is True or show_to_console is True:
-			if Console.colored_output is True or colored_output is True:
-				if time_stamp is True:
-					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}[{time_stamp_value}] - {error_message}.{Colors.reset}\n")
-
-				else:
-					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}{error_message}.{Colors.reset}\n")
-
-			else:	# Se la stampa colorato non è attiva:
-				if time_stamp is True:
-					print(f"\n  > [{time_stamp_value}] - {error_message}.\n")
-
-				else:
-					print(f"\n  > {error_message}.\n")
+				logs_file.write(message)	#* Scrittura al file.
 
 
 	@staticmethod
@@ -218,7 +197,7 @@ class Console:
 
 
 	@staticmethod
-	def log(console_message: str, *, show_to_console: bool = False, time_stamp: bool = False, end: str = "") -> None:
+	def log(console_message: str, *, show_to_console: bool = False, time_stamp: bool = False, end: str = None) -> None:
 		''' Funzionalità per la stampa di informazioni utili a terminale a fini di debug, abilitatile con "Console.config(debug=True)".
 
 		Il parametro "show_to_console" sovrascriverà la configurazione solo per l'istanza dove la sua funzione è stata chiamata. '''
@@ -234,29 +213,75 @@ class Console:
 
 				if time_stamp is True:
 
-					if end == "":
-						print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}\n")	#* Stampa colorata con intestazione temporale.
+					if end == None:
+						print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}")	#* Stampa colorata con intestazione temporale.
 
 					else:
 						print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}", end = end)
 
 				else:
-					print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}{console_message}.{Colors.reset}\n")
 
-			else:
+					if end == None:
+						print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}{console_message}.{Colors.reset}")
+
+					else:
+						print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}{console_message}{Colors.reset}", end = end)
+
+			else:	# Se la stampa colorata è disabilitata:
 
 				if time_stamp is True:
-					print(f"\n> [{time_stamp_value}] - {console_message}.\n")
 
-				else:
-					print(f"\n> {console_message}.\n")
+					if end == None:
+						print(f"\n> [{time_stamp_value}] - {console_message}.")
+
+					else:
+						print(f"\n> [{time_stamp_value}] - {console_message}", end = end)
+
+				else:	# Se l'intestazione temporale è disabilitata:
+
+					if end == None:
+						print(f"\n> {console_message}.")
+
+					else:
+						print(f"\n> {console_message}", end = end)
 
 		if Console.do_we_use_logs is True:
 
-			Console.write_to_log_file(console_message, time_stamp_value)
+			if end is None:
+				Console.write_to_log_file(console_message, time_stamp_value)
+
+			else:
+				Console.write_to_log_file(console_message, time_stamp_value, end_of_message = end)
 
 		elif Console.do_we_use_logs is None:
 			Console.fatal_error('Mancata esecuzione del metodo: "Console.config()"')
+
+
+	@staticmethod
+	def error(error_message: str, *, show_to_console: bool = False, colored_output: bool = False, time_stamp: bool = do_we_use_time_stamps) -> None:
+		''' Metodo per la presentazione degli errori non fatali.
+		Per presentare errori fatali usare: "Console.fatal_error()". '''
+
+		colored_output = Console.colored_output	# Sovrascrizione della variabile locale con la variabile della classe.
+		time_stamp_value = datetime.now().strftime("%H:%M:%S")	# Time stamp per i log.
+
+		if Console.do_we_use_logs is True:	# Se i log sono attivi:
+			Console.write_to_log_file(f"ERROR: {error_message}", time_stamp_value)
+
+		if Console.debug is True or show_to_console is True:
+			if Console.colored_output is True or colored_output is True:
+				if time_stamp is True:
+					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}[{time_stamp_value}] - {error_message}.{Colors.reset}\n")
+
+				else:
+					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}{error_message}.{Colors.reset}\n")
+
+			else:	# Se la stampa colorato non è attiva:
+				if time_stamp is True:
+					print(f"\n  > [{time_stamp_value}] - {error_message}.\n")
+
+				else:
+					print(f"\n  > {error_message}.\n")
 
 
 	@staticmethod
@@ -346,9 +371,8 @@ class Console:
 		# Generato da I.A.
 
 		try:
-			from prompt_toolkit import prompt
-			from prompt_toolkit.completion import PathCompleter
-			from prompt_toolkit.styles import Style
+			from prompt_toolkit import prompt # type: ignore
+			from prompt_toolkit.completion import PathCompleter # type: ignore
 
 		except ModuleNotFoundError:
 			Console.fatal_error('Mancate il modulo: "prompt_toolkit"')
