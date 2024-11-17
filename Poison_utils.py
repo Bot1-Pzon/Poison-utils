@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
 # Metadati:
 __doc__ = "docstring w.i.p."
-__version__ = "1.0.7"
+__version__ = "1.0.8"
 
 spell = '''Ain't it hard to stumble
 and land in the wrong side of the lagoon,
@@ -77,13 +77,13 @@ class Console:
 	debug:bool = False
 	do_we_use_logs: bool = False
 	logs_file_path: str = None
-	logs_file: "File" = None
+	logs_files_list: list["File"] = []
 	do_we_use_time_stamps: bool = False
 	screen_cleaning_method: str = None
 	colored_output: bool = None
 
 
-	def write_to_log_file(message: str, time_stamp: str = None, end_of_message: str = None) -> None:
+	def write_to_log_files(message: str, time_stamp: str = None, end_of_message: str = None) -> None:
 		" Funzione per la scrittura al file di log. "
 
 		if not os.path.exists(Console.logs_file_path):
@@ -102,19 +102,20 @@ class Console:
 		else:
 			message = f"\t[{time_stamp_value}] - {message + end_of_message}"
 
-		with open(Console.logs_file_path, "a", encoding = "utf-8") as logs_file:
+		for log_file in Console.logs_files_list:
+			with open(log_file.path, "a", encoding = "utf-8") as logs_file:
 				logs_file.write(message)	#* Scrittura al file.
 
 
 	@staticmethod
-	def fatal_error(error_message: str, *, colored_output: bool = False) -> None:
+	def fatal_error(error_message: str, *, colored_output: bool = False, do_we_write_to_log_file: bool = True) -> None:
 
 		''' Metodo per la presentazione degli errori fatali.
 		Per presentare errori non fatali usare: "Console.error()". '''
-		if Console.do_we_use_logs is True:	# Se i log sono attivi:
+		if Console.do_we_use_logs is True and do_we_write_to_log_file is True:	# Se i log sono attivi:
 			time_stamp_value = datetime.now().strftime("%H:%M:%S")	#* valore temporale per i log.
 
-			Console.write_to_log_file(f"FATAL ERROR: {error_message}", time_stamp_value)
+			Console.write_to_log_files(f"FATAL ERROR: {error_message}", time_stamp_value)
 
 		print()
 		print(f"{Colors.bold}{Colors.bg.orange}{Colors.fg.red}<{Colors.reset}{Colors.fg.red}", end="")
@@ -140,8 +141,8 @@ class Console:
 		if not os.path.exists(logs_path):	# Se il percorso file dei log non esiste:
 			Console.fatal_error(f'Il percorso: "{logs_path}" non esiste, specificarne un altro a: "Console.config(logs_file_path=...)')
 
-		if not os.path.exists(os.path.join(logs_path, logs_directory_name)):	# Se la cartella dei logs non esiste:
-			os.makedirs(os.path.join(logs_path, logs_directory_name))	#* Crea la cartella dei logs.
+		if not os.path.exists(os.path.normpath(os.path.join(logs_path, logs_directory_name))):	# Se la cartella dei logs non esiste:
+			os.makedirs(os.path.normpath(os.path.join(logs_path, logs_directory_name)))	#* Crea la cartella dei logs.
 
 		logs_path = os.path.join(logs_path, logs_directory_name, logs_file_name)
 
@@ -150,7 +151,7 @@ class Console:
 
 		if not os.path.exists(logs_path):	# Se il file di log non esiste:
 			time_stamp_value = datetime.now().strftime("%H:%M:%S")
-			time_header =  time_header + f'\t[{time_stamp_value}] - File dei logs creato.\n'
+			time_header =  time_header + f'\t[{time_stamp_value}] - File dei logs creato presso: \"{os.path.normpath(logs_path)}\".\n'
 
 		else:
 			time_header = '\n' + time_header
@@ -158,7 +159,10 @@ class Console:
 		with open(logs_path, "a") as logs_file:	#* Creazione del file dei log.
 			logs_file.write(time_header)	#* Scrittura dell'intestazione temporale nel file dei log.
 
-		Console.logs_file = File(logs_path)
+		if len(Console.logs_files_list) > 0:
+			Console.log(f"File dei logs parallelo creato presso: \"{os.path.normpath(logs_path)}\"")
+
+		Console.logs_files_list.append(File(logs_path))
 
 		Console.logs_file_path = logs_path
 		Console.do_we_use_logs = True
@@ -248,10 +252,10 @@ class Console:
 		if Console.do_we_use_logs is True:
 
 			if end is None:
-				Console.write_to_log_file(console_message, time_stamp_value)
+				Console.write_to_log_files(console_message, time_stamp_value)
 
 			else:
-				Console.write_to_log_file(console_message, time_stamp_value, end_of_message = end)
+				Console.write_to_log_files(console_message, time_stamp_value, end_of_message = end)
 
 		elif Console.do_we_use_logs is None:
 			Console.fatal_error('Mancata esecuzione del metodo: "Console.config()"')
@@ -266,22 +270,22 @@ class Console:
 		time_stamp_value = datetime.now().strftime("%H:%M:%S")	# Time stamp per i log.
 
 		if Console.do_we_use_logs is True:	# Se i log sono attivi:
-			Console.write_to_log_file(f"ERROR: {error_message}", time_stamp_value)
+			Console.write_to_log_files(f"ERROR: {error_message}", time_stamp_value)
 
 		if Console.debug is True or show_to_console is True:
 			if Console.colored_output is True or colored_output is True:
 				if time_stamp is True:
-					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}[{time_stamp_value}] - {error_message}.{Colors.reset}\n")
+					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}[{time_stamp_value}] - {error_message}.{Colors.reset}")
 
 				else:
-					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}{error_message}.{Colors.reset}\n")
+					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}{error_message}.{Colors.reset}")
 
 			else:	# Se la stampa colorato non è attiva:
 				if time_stamp is True:
-					print(f"\n  > [{time_stamp_value}] - {error_message}.\n")
+					print(f"\n  > [{time_stamp_value}] - {error_message}.")
 
 				else:
-					print(f"\n  > {error_message}.\n")
+					print(f"\n  > {error_message}.")
 
 
 	@staticmethod
@@ -376,7 +380,7 @@ class Console:
 
 		except ModuleNotFoundError:
 			Console.fatal_error('Mancate il modulo: "prompt_toolkit"')
-   
+
 
 		results = prompt(pre_input_text, completer = PathCompleter(only_directories = False, expanduser = True))
 		return results
