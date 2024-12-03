@@ -5,20 +5,20 @@ Modulo con varie funzionalità creato da Poison_8o8.
 '''
 
 import os
-import sys
-from random import randint
+from sys import exit as sys_exit, stdout as sys_stdout
+from random import randint as random_integer
 from datetime import datetime	# Per le stampe temporali.
 
 
 if __name__ == "__main__":
 
 	print(f'\n\033[31mErrore\033[0m: \033[44m\033[01m{os.path.normpath(os.path.basename(__file__))}\033[0m è un modulo.\nNon dovresti eseguire questo file direttamente.\n')
-	sys.exit()
+	sys_exit()
 
 
 # Metadati:
 __doc__ = "docstring w.i.p."
-__version__ = "1.0.8"
+__version__ = "1.0.9"
 
 spell = '''Ain't it hard to stumble
 and land in the wrong side of the lagoon,
@@ -72,14 +72,14 @@ class Colors:
 # =================================================================================================================== #
 
 class Console:
-	"Funzionalità per facilitare l'interazione con il terminale."
+	''' Funzionalità per facilitare l'interazione con il terminale. '''
 
 	debug:bool = False
 	do_we_use_logs: bool = False
 	logs_file_path: str = None
 	logs_files_list: list["File"] = []
 	do_we_use_time_stamps: bool = False
-	screen_cleaning_method: str = None
+	screen_cleaning_method: str = "auto"
 	colored_output: bool = None
 
 
@@ -103,8 +103,12 @@ class Console:
 			message = f"\t[{time_stamp_value}] - {message + end_of_message}"
 
 		for log_file in Console.logs_files_list:
-			with open(log_file.path, "a", encoding = "utf-8") as logs_file:
-				logs_file.write(message)	#* Scrittura al file.
+			try:
+				with open(log_file.path, "a", encoding = "utf-8") as logs_file:
+					logs_file.write(message)	#* Scrittura al file.
+
+			except Exception as error:
+				Console.fatal_error(f"Durante la scrittura nel file di log \"{log_file.path}\" si è verificato il seguente errore: \"{error}\"")
 
 
 	@staticmethod
@@ -119,8 +123,7 @@ class Console:
 
 		print()
 		print(f"{Colors.bold}{Colors.bg.orange}{Colors.fg.red}<{Colors.reset}{Colors.fg.red}", end="")
-		for i in range(125):
-			print("\u2588", end="")
+		print("\u2588" * 125, end="")
 		print(f"{Colors.bold}{Colors.bg.orange}>{Colors.reset}\n")
 
 		if Console.colored_output is True or colored_output is True:	# Se l'output colorato è stato abilitato in generale o per questo errore:
@@ -218,10 +221,10 @@ class Console:
 				if time_stamp is True:
 
 					if end == None:
-						print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}")	#* Stampa colorata con intestazione temporale.
+						print(f"\n[{time_stamp_value}]{Colors.bold} - {Colors.bg.orange}> {Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}")	#* Stampa colorata con intestazione temporale.
 
 					else:
-						print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}", end = end)
+						print(f"\n[{time_stamp_value}]{Colors.bold} - {Colors.bg.orange}> {Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}", end = end)
 
 				else:
 
@@ -275,24 +278,24 @@ class Console:
 		if Console.debug is True or show_to_console is True:
 			if Console.colored_output is True or colored_output is True:
 				if time_stamp is True:
-					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}[{time_stamp_value}] - {error_message}.{Colors.reset}")
+					print(f"\n[{time_stamp_value}]{Colors.bold} - {Colors.bg.red}ERROR{Colors.reset}: {Colors.fg.light_red}[{time_stamp_value}] - {error_message}.{Colors.reset}")
 
 				else:
-					print(f"\n{Colors.bold}{Colors.bg.purple}> {Colors.reset} {Colors.fg.light_red}{error_message}.{Colors.reset}")
+					print(f"\n{Colors.bold}{Colors.bg.red}ERROR{Colors.reset}{Colors.bold}:{Colors.reset} {Colors.fg.light_red}{error_message}.{Colors.reset}")
 
 			else:	# Se la stampa colorato non è attiva:
 				if time_stamp is True:
-					print(f"\n  > [{time_stamp_value}] - {error_message}.")
+					print(f"\nERROR: [{time_stamp_value}] - {error_message}.")
 
 				else:
-					print(f"\n  > {error_message}.")
+					print(f"\nERROR: {error_message}.")
 
 
 	@staticmethod
 	def stop() -> None:
-		'''Funzionalità per arrestare il programma'''
+		''' Funzionalità per arrestare il programma. '''
 		Console.log("Il programma è stato terminato tramite istruzione")
-		sys.exit()
+		sys_exit()
 
 
 	@staticmethod
@@ -330,9 +333,9 @@ class Console:
 			Console.fatal_error(f'Il minimo di line eliminabili è 1, non "{lines_number}"')
 
 		for i in range(lines_number):
-			sys.stdout.write("\033[F")
-			sys.stdout.write("\033[K")
-			sys.stdout.flush()
+			sys_stdout.write("\033[F")
+			sys_stdout.write("\033[K")
+			sys_stdout.flush()
 
 
 	@staticmethod
@@ -363,9 +366,9 @@ class Console:
 		if os.path.exists(virtual_environment_path):
 			Console.fatal_error(f'Il percorso "{virtual_environment_path}" esiste gia')
 
-		import venv
-		venv.create(virtual_environment_path, clear=True)
-		Console.log(f'Ambiente virtuale creato in: "{virtual_environment_path}"')
+		from venv import create as venv_create
+		venv_create(virtual_environment_path, clear = True)	#* Creazione dell'ambiente virtuale.
+		Console.log(f"Ambiente virtuale creato in: \"{virtual_environment_path}\"")
 
 
 	@staticmethod
@@ -398,24 +401,24 @@ class Console:
 				Console.fatal_error(f'Le coordinate minime inseribili sono: "(1; 1)" non "({x}; {y})"')
 
 			else:
-				sys.stdout.write(f'\033[{y};{x}f')	#* Spostamento del cursore.
-				sys.stdout.flush()
+				sys_stdout.write(f'\033[{y};{x}f')	#* Spostamento del cursore.
+				sys_stdout.flush()
 
 
 		@staticmethod
 		def reset() -> None:
-			sys.stdout.write('\033[H')
-			sys.stdout.flush()
+			sys_stdout.write('\033[H')
+			sys_stdout.flush()
 
 # =================================================================================================================== #
 
 class File:
-	"Funzionalità per la gestione dei file per gestire i file."
+	"Funzionalità per la gestione e interazione con i file."
 
 	def __init__(self, path: str) -> None:
 
 		if  not os.path.exists(path):	# Se il percorso file non esiste:
-			Console.fatal_error(f'Il percorso file: "{path}" non esiste')
+			Console.fatal_error(f"Il percorso file: \"{path}\" non esiste")
 
 		self.path = os.path.normpath(os.path.realpath(path))
 
@@ -479,25 +482,37 @@ class File:
 		''' Crea il percorso completo di cartelle e file.\n
 			Se si desidera creare solo cartelle non specificare \"file_name\".'''
 
+		if file_name is not None:
+			path = os.path.normpath(os.path.join(path, file_name))
+
+		else:
+			path = os.path.normpath(path)
+
 		if file_name is not None:	# Se il nome del file è stato specificato:
 			path = os.path.join(path, file_name)	#* Aggiungilo al percorso da creare.
 
 		if os.path.exists(path):	# Se il percorso file non esiste:
-			Console.fatal_error(f'Il percorso "{path}" esiste gia')	#* Lancia un errore.
+			Console.fatal_error(f"Il percorso \"{path}\" esiste gia")	#* Lancia un errore.
 
 		if not os.path.exists(os.path.dirname(path)):	# Se la cartella contenitrice non esiste:
 			os.makedirs(os.path.dirname(path))	#* Creazione cartella contenitrice.
-			Console.log(f'Cartella "{os.path.dirname(path)}" creata')
+			Console.log(f"Cartella \"{os.path.dirname(path)}\" creata")
 
 		if file_name is None:
 			os.makedirs(path)
 			Console.log(f'Cartella "{path}" creata')
 
 		else:
-			file = open(path, "x")
-			file.close()
-			Console.log(f'File "{path}" creato')
-			return File(path)
+			try:
+				file = open(path, "x")
+				file.close()
+
+			except Exception as file_handling_error:
+				Console.fatal_error(f"Durante la creazione del file: \"{path}\" si è verificato il seguente errore: \"{file_handling_error}\"")
+
+			else:
+				Console.log(f'File "{path}" creato')
+				return File(path)
 
 
 	@staticmethod
@@ -506,10 +521,10 @@ class File:
 
 		if os.path.exists(path):
 			os.remove(path)
-			Console.log(f'File "{path}" eliminato')
+			Console.log(f"File \"{path}\" eliminato")
 
 		else:
-			Console.fatal_error(f'Il file "{path}" non esiste')
+			Console.fatal_error(f"Il file \"{path}\" non esiste")
 
 # =================================================================================================================== #
 
@@ -560,8 +575,8 @@ class List:
 		"Funzionalità per la creazione di una lista casuale dalla lunghezza e range dei valori specificati."
 
 		random_list = []
-		for i in range(list_length):
-			random_list.append(randint(minimum_value, maximum_value))	#* Inserimento nella lista casuale.
+		for _ in range(list_length):
+			random_list.append(random_integer(minimum_value, maximum_value))	#* Inserimento nella lista casuale.
 
 		return random_list
 
@@ -610,15 +625,18 @@ class List:
 # =================================================================================================================== #
 
 class Math:
-	"Funzionalità per l'implementazione di varie funzioni matematiche."
+	''' Funzionalità per l'implementazione di varie funzioni matematiche. '''
 
 	@staticmethod
 	def factorial(x: int) -> int:
-		" Funzionalità per il calcolo del fattoriale di un intero."
+		''' Funzionalità per il calcolo del fattoriale di un intero. '''
+
+		if x < 0:
+			Console.fatal_error(f'Il fattoriale di un {x} < 0 supportato')
 
 		r: int = 1
 		for i in range(1, x + 1):
-			r =+ r * i
+			r *= i
 		return r
 
 
@@ -633,12 +651,12 @@ class Math:
 			return 1
 
 		else:
-			fibonacci_sequence: list[int] = [0, 1]
+			a, b = 0, 1
 
-			for i in range(2, n + 71):
-				fibonacci_sequence.append(fibonacci_sequence[i - 1] + fibonacci_sequence[i - 2])
+			for _ in range(n - 2):
+				a, b = b, (a + b)
 
-			return fibonacci_sequence[n]
+			return b
 
 # =================================================================================================================== #
 

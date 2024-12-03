@@ -4,8 +4,8 @@
 
 <p>
 			<strong>Poison's Utilities</strong> è un
-			<a href="https://docs.python.org/3/tutorial/modules.html">modulo</a> sviluppato a scopo quasi esclusivamente
-			didattico in <a href="https://www.python.org/">python</a> con varie funzionalità.
+			<a href="https://docs.python.org/3/tutorial/modules.html">modulo</a> sviluppato da <a href="https://github.com/Bot1-Pzon">Poison_8o8</a>  a scopo quasi esclusivamente
+			didattico, è scritto in <a href="https://www.python.org/">python</a> e contiene varie funzionalità.
 		</p>
 	</div>
 
@@ -15,7 +15,7 @@
 	<li>
 		<!-- Colori -->
 		<div>
-			<h3>Colori <code>Colors</code></h3>
+			<h3>Gestione dei colori a terminale <code>Colors</code></h3>
 
 <p>Funzionalità per manipolare l'output del terminale, ad esempio con la stampa colorata.</p>
 
@@ -70,7 +70,7 @@
 	<li>
 		<!-- Console -->
 		<div>
-			<h3>Console <code>Console</code></h3>
+			<h3>Interazione con la console <code>Console</code></h3>
 			<p>Funzionalità per facilitare l'interazione con il terminale.</p>
 
 <ul>
@@ -124,8 +124,8 @@
 	<li>
 		<!-- File -->
 		<div>
-			<h3>File <code>File</code></h3>
-			<p>Funzionalità per la gestione dei file per gestire i file..</p>
+			<h3>Gestione  comprensibile dei file <code>File</code></h3>
+			<p>Funzionalità per la gestione e interazione con i file.</p>
 
 <ul>
 				<li>
@@ -155,8 +155,8 @@
 	<li>
 		<!-- Web_kit -->
 		<div>
-			<h3>Path <code>Web_kit</code></h3>
-			<p>Funzionalità per lo sviluppo di server web.</p>
+			<h3>Funzionalità per l'implementazione di server web <code>Web_kit</code></h3>
+			<p>Funzionalità per lo sviluppo di server web: caricamento di un documento.</p>
 			<ul>
 				<li>
 					<h4>Configurazione <code>Web_kit.config()</code></h4>
@@ -170,8 +170,8 @@
 	<li>
 		<!-- Liste -->
 		<div>
-			<h3>Path <code>List</code></h3>
-			<p>Funzionalità per lo sviluppo di server web.</p>
+			<h3>Liste <code>List</code></h3>
+			<p>Funzionalità per la gestione di liste.</p>
 			<ul>
 				<li>
 					<h4>Creazione di una lista casuale <code>List.create_random_list()</code></h4>
@@ -191,8 +191,8 @@
 	<li>
 		<!-- Matematica -->
 		<div>
-			<h3>Path <code>Math</code></h3>
-			<p>Funzionalità per lo sviluppo di server web.</p>
+			<h3>Funzioni matematiche <code>Math</code></h3>
+			<p>Funzionalità per l'implementazione di varie funzioni matematiche.</p>
 			<ul>
 				<li>
 					<h4>Funzione per il calcolo del fattoriale <code>Math.factorial()</code></h4>
@@ -206,7 +206,7 @@
 	<li>
 		<!-- Fisica -->
 		<div>
-			<h3>Path <code>Physic</code></h3>
+			<h3>Calcoli con le grandezze fisiche <code>Physic</code></h3>
 			<p>Classe per il calcolo con grandezze fisiche tenendo conto delle incertezze.</p>
 			<ul>
 				<li>
