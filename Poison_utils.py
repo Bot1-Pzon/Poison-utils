@@ -8,6 +8,9 @@ import os
 from sys import exit as sys_exit, stdout as sys_stdout
 from random import randint as random_integer
 from datetime import datetime	# Per le stampe temporali.
+from importlib.util import find_spec
+from shutil import move as shutil_move, rmtree as shutil_remove_tree
+import subprocess
 
 
 if __name__ == "__main__":
@@ -18,161 +21,29 @@ if __name__ == "__main__":
 
 # Metadati:
 __doc__ = "docstring w.i.p."
-__version__ = "1.0.9"
+__version__ = "2.0.0"
 
-spell = '''Ain't it hard to stumble
+spell = """Ain't it hard to stumble
 and land in the wrong side of the lagoon,
 ain't it hard to stumble
 and hope that death didn't get you so soon.
 
-- Poison_8o8'''
-
-# =================================================================================================================== #
-
-class Colors:
-	"Funzionalità per manipolare l'output del terminale, ad esempio con la stampa colorata."
-
-	reset = "\033[0m"
-	bold = "\033[01m"
-	disable = "\033[02m"
-	underline = "\033[04m"
-	blink = "\033[05m"
-	reverse = "\033[07m"
-	strike_through = "\033[09m"
-	invisible = "\033[08m"
-
-	class fg:
-		white = "\033[50m"
-		black = "\033[30m"
-		red = "\033[31m"
-		green = "\033[32m"
-		orange = "\033[33m"
-		blue = "\033[34m"
-		purple = "\033[35m"
-		cyan = "\033[36m"
-		light_grey = "\033[37m"
-		dark_grey = "\033[90m"
-		light_red = "\033[91m"
-		light_green = "\033[92m"
-		yellow = "\033[93m"
-		light_blue = "\033[94m"
-		pink = "\033[95m"
-		light_cyan = "\033[96m"
-
-	class bg:
-		black = "\033[40m"
-		red = "\033[41m"
-		green = "\033[42m"
-		orange = "\033[43m"
-		blue = "\033[44m"
-		purple = "\033[45m"
-		cyan = "\033[46m"
-		light_grey = "\033[47m"
+- Poison_8o8"""
 
 # =================================================================================================================== #
 
 class Console:
 	''' Funzionalità per facilitare l'interazione con il terminale. '''
 
-	debug:bool = False
+	debug: bool = False
 	do_we_use_logs: bool = False
-	logs_file_path: str = None
-	logs_files_list: list["File"] = []
 	do_we_use_time_stamps: bool = False
-	screen_cleaning_method: str = "auto"
+	terminal_cleaning_method: str = 'auto'
 	colored_output: bool = None
 
 
-	def write_to_log_files(message: str, time_stamp: str = None, end_of_message: str = None) -> None:
-		" Funzione per la scrittura al file di log. "
-
-		if not os.path.exists(Console.logs_file_path):
-
-			Console.fatal_error(f"Il file di log '{Console.logs_file_path}' non esiste")
-
-		if time_stamp is None:
-			time_stamp_value = datetime.now().strftime("%H:%M:%S")
-
-		else:
-			time_stamp_value = time_stamp
-
-		if end_of_message is None:
-			message = f"\t[{time_stamp_value}] - {message}.\n"
-
-		else:
-			message = f"\t[{time_stamp_value}] - {message + end_of_message}"
-
-		for log_file in Console.logs_files_list:
-			try:
-				with open(log_file.path, "a", encoding = "utf-8") as logs_file:
-					logs_file.write(message)	#* Scrittura al file.
-
-			except Exception as error:
-				Console.fatal_error(f"Durante la scrittura nel file di log \"{log_file.path}\" si è verificato il seguente errore: \"{error}\"")
-
-
 	@staticmethod
-	def fatal_error(error_message: str, *, colored_output: bool = False, do_we_write_to_log_file: bool = True) -> None:
-
-		''' Metodo per la presentazione degli errori fatali.
-		Per presentare errori non fatali usare: "Console.error()". '''
-		if Console.do_we_use_logs is True and do_we_write_to_log_file is True:	# Se i log sono attivi:
-			time_stamp_value = datetime.now().strftime("%H:%M:%S")	#* valore temporale per i log.
-
-			Console.write_to_log_files(f"FATAL ERROR: {error_message}", time_stamp_value)
-
-		print()
-		print(f"{Colors.bold}{Colors.bg.orange}{Colors.fg.red}<{Colors.reset}{Colors.fg.red}", end="")
-		print("\u2588" * 125, end="")
-		print(f"{Colors.bold}{Colors.bg.orange}>{Colors.reset}\n")
-
-		if Console.colored_output is True or colored_output is True:	# Se l'output colorato è stato abilitato in generale o per questo errore:
-			raise Exception(f"{Colors.underline}{Colors.fg.red}{error_message}{Colors.reset}{Colors.fg.red}.{Colors.reset}\n\n")	#* Lancio dell errore.
-
-		else:
-			raise Exception(f"{error_message}.\n\n")
-
-
-	@staticmethod
-	def create_logs_folder(logs_path: str = "./", logs_directory_name: str = "Logs", logs_file_name: str = "logs.log") -> None:
-
-		initial_time_stamp = datetime.now().strftime("%d/%m/%Y - %H:%M")
-
-		if logs_path is None:	# Se il percorso file dei log non è stato impostato:
-			Console.fatal_error('Specificare il percorso del file di log presso il metodo: "Console.config(logs_file_path=...)"')
-
-		if not os.path.exists(logs_path):	# Se il percorso file dei log non esiste:
-			Console.fatal_error(f'Il percorso: "{logs_path}" non esiste, specificarne un altro a: "Console.config(logs_file_path=...)')
-
-		if not os.path.exists(os.path.normpath(os.path.join(logs_path, logs_directory_name))):	# Se la cartella dei logs non esiste:
-			os.makedirs(os.path.normpath(os.path.join(logs_path, logs_directory_name)))	#* Crea la cartella dei logs.
-
-		logs_path = os.path.join(logs_path, logs_directory_name, logs_file_name)
-
-		#TODO: {os.path.realpath(__file__)} Se esiste un metodo mostrare il file principale, non la libreria.
-		time_header = f'< ==== | {initial_time_stamp} | ==== >\nEsecuzione del file: "{os.path.normpath(os.path.realpath(__file__))}".\n\n'
-
-		if not os.path.exists(logs_path):	# Se il file di log non esiste:
-			time_stamp_value = datetime.now().strftime("%H:%M:%S")
-			time_header =  time_header + f'\t[{time_stamp_value}] - File dei logs creato presso: \"{os.path.normpath(logs_path)}\".\n'
-
-		else:
-			time_header = '\n' + time_header
-
-		with open(logs_path, "a") as logs_file:	#* Creazione del file dei log.
-			logs_file.write(time_header)	#* Scrittura dell'intestazione temporale nel file dei log.
-
-		if len(Console.logs_files_list) > 0:
-			Console.log(f"File dei logs parallelo creato presso: \"{os.path.normpath(logs_path)}\"")
-
-		Console.logs_files_list.append(File(logs_path))
-
-		Console.logs_file_path = logs_path
-		Console.do_we_use_logs = True
-
-
-	@staticmethod
-	def config(*, debug: bool = True,  logs: bool = True, logs_file_path: str = None, do_we_use_time_stamps: bool = False, screen_cleaning_method: str = "auto", colored_output: bool = True) -> None:
+	def config(*, debug: bool = True,  logs: bool = True, logs_path: str = None, do_we_use_time_stamps: bool = False, screen_cleaning_method: str = "auto", colored_output: bool = True) -> None:
 		''' Metodo di configurazione della funzionalità Console.
 
 		- È possibile attivare il debug: "Console.config(debug=True)".
@@ -184,128 +55,33 @@ class Console:
 		Console.colored_output = colored_output
 
 		if screen_cleaning_method in ("auto", "cls", "clear"):	# Se il metodo di pulizia dello schermo è fra i supportati:
-			Console.screen_cleaning_method = screen_cleaning_method
+			Console.terminal_cleaning_method = screen_cleaning_method
 
 		else:	# Se il metodo di pulizia dello schermo non è fra i supportati:
 
-			Console.fatal_error(f'''Errore durante l'esecuzione del metodo: "Console.config()":\nSono supportati solo i parametri "auto", "cls" e "clear", non "{screen_cleaning_method}" inserito dall'utente''')
+			Console.Logs.Errors.fatal_error(f"Errore durante l'esecuzione del metodo: \"Console.config()\":\nSono supportati solo i parametri (\"auto\", \"cls\" e \"clear\"), non \"{screen_cleaning_method}\" inserito dall'utente")
 
 		if logs is True:
 			Console.do_we_use_logs = True
 
-			if logs_file_path is None:
-				Console.create_logs_folder()
+			if logs_path is None:
+				Console.Logs.create_logs_folder()
 
 			else:
-				Console.create_logs_folder(logs_file_path)
+				Console.Logs.create_logs_folder(logs_path)
 
 		Console.debug = debug
 		Console.do_we_use_time_stamps = do_we_use_time_stamps
 
 
 	@staticmethod
-	def log(console_message: str, *, show_to_console: bool = False, time_stamp: bool = False, end: str = None) -> None:
-		''' Funzionalità per la stampa di informazioni utili a terminale a fini di debug, abilitatile con "Console.config(debug=True)".
-
-		Il parametro "show_to_console" sovrascriverà la configurazione solo per l'istanza dove la sua funzione è stata chiamata. '''
-
-		time_stamp_value = datetime.now().strftime("%H:%M:%S")
-
-		if Console.debug is None:
-			Console.fatal_error('Mancata esecuzione del metodo: "Console.config()"', colored_output = True)
-
-		elif Console.debug is True or show_to_console is True:
-
-			if Console.colored_output is True:
-
-				if time_stamp is True:
-
-					if end == None:
-						print(f"\n[{time_stamp_value}]{Colors.bold} - {Colors.bg.orange}> {Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}")	#* Stampa colorata con intestazione temporale.
-
-					else:
-						print(f"\n[{time_stamp_value}]{Colors.bold} - {Colors.bg.orange}> {Colors.reset} {Colors.fg.green}[{time_stamp_value}] - {console_message}.{Colors.reset}", end = end)
-
-				else:
-
-					if end == None:
-						print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}{console_message}.{Colors.reset}")
-
-					else:
-						print(f"\n{Colors.bold}{Colors.bg.orange}> {Colors.reset} {Colors.fg.green}{console_message}{Colors.reset}", end = end)
-
-			else:	# Se la stampa colorata è disabilitata:
-
-				if time_stamp is True:
-
-					if end == None:
-						print(f"\n> [{time_stamp_value}] - {console_message}.")
-
-					else:
-						print(f"\n> [{time_stamp_value}] - {console_message}", end = end)
-
-				else:	# Se l'intestazione temporale è disabilitata:
-
-					if end == None:
-						print(f"\n> {console_message}.")
-
-					else:
-						print(f"\n> {console_message}", end = end)
-
-		if Console.do_we_use_logs is True:
-
-			if end is None:
-				Console.write_to_log_files(console_message, time_stamp_value)
-
-			else:
-				Console.write_to_log_files(console_message, time_stamp_value, end_of_message = end)
-
-		elif Console.do_we_use_logs is None:
-			Console.fatal_error('Mancata esecuzione del metodo: "Console.config()"')
-
-
-	@staticmethod
-	def error(error_message: str, *, show_to_console: bool = False, colored_output: bool = False, time_stamp: bool = do_we_use_time_stamps) -> None:
-		''' Metodo per la presentazione degli errori non fatali.
-		Per presentare errori fatali usare: "Console.fatal_error()". '''
-
-		colored_output = Console.colored_output	# Sovrascrizione della variabile locale con la variabile della classe.
-		time_stamp_value = datetime.now().strftime("%H:%M:%S")	# Time stamp per i log.
-
-		if Console.do_we_use_logs is True:	# Se i log sono attivi:
-			Console.write_to_log_files(f"ERROR: {error_message}", time_stamp_value)
-
-		if Console.debug is True or show_to_console is True:
-			if Console.colored_output is True or colored_output is True:
-				if time_stamp is True:
-					print(f"\n[{time_stamp_value}]{Colors.bold} - {Colors.bg.red}ERROR{Colors.reset}: {Colors.fg.light_red}[{time_stamp_value}] - {error_message}.{Colors.reset}")
-
-				else:
-					print(f"\n{Colors.bold}{Colors.bg.red}ERROR{Colors.reset}{Colors.bold}:{Colors.reset} {Colors.fg.light_red}{error_message}.{Colors.reset}")
-
-			else:	# Se la stampa colorato non è attiva:
-				if time_stamp is True:
-					print(f"\nERROR: [{time_stamp_value}] - {error_message}.")
-
-				else:
-					print(f"\nERROR: {error_message}.")
-
-
-	@staticmethod
-	def stop() -> None:
-		''' Funzionalità per arrestare il programma. '''
-		Console.log("Il programma è stato terminato tramite istruzione")
-		sys_exit()
-
-
-	@staticmethod
 	def clear() -> None:
-		"Metodo per la pulizia del terminale."
+		''' Metodo per la pulizia del terminale. '''
 
-		if Console.screen_cleaning_method is None:
-			Console.fatal_error('Specificare il metodo di pulizia della schermo presso il metodo: "Console.config(screen_cleaning_method=...)"')
+		if Console.terminal_cleaning_method is None:
+			Console.Logs.Errors.fatal_error('Specificare il metodo di pulizia della schermo presso il metodo: "Console.config(screen_cleaning_method=...)"')
 
-		elif Console.screen_cleaning_method == "auto":
+		elif Console.terminal_cleaning_method == "auto":
 			if os.name == 'posix':
 				os.system('clear')	# Metodo di pulizia per sistemi Unix/Linux/macOS.
 
@@ -313,92 +89,289 @@ class Console:
 				os.system('cls')	# Metodo di pulizia per sistemi Windows.
 
 			else:
-				Console.fatal_error(f'Nel sistema operativo \"{os.name}\" la pulizia dello schermo non è supportata')
+				Console.Logs.Errors.fatal_error(f'Nel sistema operativo \"{os.name}\" la pulizia dello schermo non è supportata')
 
-		elif Console.screen_cleaning_method == "clear":
+		elif Console.terminal_cleaning_method == "clear":
 			os.system("clear")
 
-		elif Console.screen_cleaning_method == "cls":
+		elif Console.terminal_cleaning_method == "cls":
 			os.system("cls")
 
 		else:
-			Console.fatal_error(f'Errore: Il parametro: "{Console.screen_cleaning_method}" impostato in: "Console.config(screen_cleaning_method=...)" non è supportato')
+			Console.Logs.Errors.fatal_error(f"Errore: Il parametro: \"{Console.terminal_cleaning_method}\" impostato in: \"Console.config(screen_cleaning_method=...)\" non è supportato")
 
 
 	@staticmethod
-	def del_lines(lines_number: int = 2) -> None:
-		"Eliminazione di un numero dato di linee dal terminale."
-
-		if lines_number < 1:
-			Console.fatal_error(f'Il minimo di line eliminabili è 1, non "{lines_number}"')
-
-		for i in range(lines_number):
-			sys_stdout.write("\033[F")
-			sys_stdout.write("\033[K")
-			sys_stdout.flush()
+	def stop() -> None:
+		''' Funzionalità per arrestare il programma. '''
+		Console.Logs.log("Il programma è stato terminato tramite istruzione")
+		sys_exit()
 
 
-	@staticmethod
-	def function_timer(_function: callable):
-		"Funzionalità per la misurazione del tempo di esecuzione di una funzione."
+	class Colors:
+		''' Funzionalità per manipolare l'output del terminale, ad esempio con la stampa colorata. '''
 
-		def wrapper(*all_positional_arguments, **all_keywords_arguments):
-			start_time = datetime.now()
+		reset = '\033[0m'
+		bold = '\033[01m'
+		disable = '\033[02m'
+		underline = '\033[04m'
+		blink = '\033[05m'
+		reverse = '\033[07m'
+		strike_through = '\033[09m'
+		invisible = '\033[08m'
 
-			function_results = _function(*all_positional_arguments, **all_keywords_arguments)
+		class fg:
+			white = '\033[50m'
+			black = '\033[30m'
+			red = '\033[31m'
+			green = '\033[32m'
+			orange = '\033[33m'
+			blue = '\033[34m'
+			purple = '\033[35m'
+			cyan = '\033[36m'
+			light_grey = '\033[37m'
+			dark_grey = '\033[90m'
+			light_red = '\033[91m'
+			light_green = '\033[92m'
+			yellow = '\033[93m'
+			light_blue = '\033[94m'
+			pink = '\033[95m'
+			light_cyan = '\033[96m'
 
-			end_time = datetime.now()
-
-			execution_time = end_time - start_time
-
-			Console.log(f'La funzione "{_function.__name__}({_function(*all_positional_arguments, **all_keywords_arguments)})" ha impiegato {execution_time} secondi per eseguire', show_to_console=True)
-
-			return function_results
-		return wrapper
-
-
-	@staticmethod
-	def create_virtual_environment(virtual_environment_path: str = "./" , virtual_environment_name: str = '.venv'):
-		" Funzionalità per la creazione di un ambiente virtuale. "
-
-		virtual_environment_path = os.path.join(virtual_environment_path, virtual_environment_name)
-
-		if os.path.exists(virtual_environment_path):
-			Console.fatal_error(f'Il percorso "{virtual_environment_path}" esiste gia')
-
-		from venv import create as venv_create
-		venv_create(virtual_environment_path, clear = True)	#* Creazione dell'ambiente virtuale.
-		Console.log(f"Ambiente virtuale creato in: \"{virtual_environment_path}\"")
-
-
-	@staticmethod
-	def file_path_input(pre_input_text: str = ""):
-		" Autocompletatore per i percorsi file "
-
-		# Generato da I.A.
-
-		try:
-			from prompt_toolkit import prompt # type: ignore
-			from prompt_toolkit.completion import PathCompleter # type: ignore
-
-		except ModuleNotFoundError:
-			Console.fatal_error('Mancate il modulo: "prompt_toolkit"')
+		class bg:
+			black = '\033[40m'
+			red = '\033[41m'
+			green = '\033[42m'
+			orange = '\033[43m'
+			blue = '\033[44m'
+			purple = '\033[45m'
+			cyan = '\033[46m'
+			light_grey = '\033[47m'
 
 
-		results = prompt(pre_input_text, completer = PathCompleter(only_directories = False, expanduser = True))
-		return results
+	class Logs:
+		''' Funzionalità per il logging di informazioni, sia a terminale che a file. '''
+
+		logs_files_list: list["File"] = []
+		logs_file_path: str = None
+
+
+		@staticmethod
+		def create_logs_folder(logs_path: str = "./", logs_directory_name: str = "Logs", logs_file_name: str = "logs.log") -> None:
+
+			''' Funzione per la creazione della cartella e dei file di log. '''
+
+			initial_time_stamp = datetime.now().strftime("%d/%m/%Y - %H:%M")
+
+			#TODO: {os.path.realpath(__file__)} Se esiste un metodo mostrare il file principale, non la libreria.
+			time_header = f'< ==== | {initial_time_stamp} | ==== >\nEsecuzione del file: "{os.path.normpath(os.path.realpath(__file__))}".\n\n'
+
+			if logs_path is None:	# Se il percorso file dei log non è stato impostato:
+				Console.Logs.Errors.fatal_error('Specificare il percorso del file di log presso il metodo: "Console.config(logs_file_path=...)"')
+
+			if not os.path.exists(logs_path):	# Se il percorso file dei log non esiste:
+				Console.Logs.Errors.fatal_error(f'Il percorso: "{logs_path}" non esiste, specificarne un altro a: "Console.config(logs_file_path=...)')
+
+			if not os.path.exists(os.path.normpath(os.path.join(logs_path, logs_directory_name))):	# Se la cartella dei logs non esiste:
+				time_stamp_value = datetime.now().strftime("%H:%M:%S")
+				os.makedirs(os.path.normpath(os.path.join(logs_path, logs_directory_name)))	#* Crea la cartella dei logs.
+				time_header = time_header + f'\t[{time_stamp_value}] - Cartella dei log creato presso: \"{os.path.normpath(os.path.join(logs_path, logs_directory_name))}\".\n'
+
+			logs_path = os.path.join(logs_path, logs_directory_name, logs_file_name)
+
+			if not os.path.exists(logs_path):	# Se il file di log non esiste:
+				time_stamp_value = datetime.now().strftime("%H:%M:%S")
+				time_header =  time_header + f'\t[{time_stamp_value}] - File dei logs creato presso: \"{os.path.normpath(logs_path)}\".\n'
+
+			else:
+				time_header = '\n' + time_header
+
+			with open(logs_path, "a") as logs_file:	#* Creazione del file dei log.
+				logs_file.write(time_header)	#* Scrittura dell'intestazione temporale nel file dei log.
+
+			if len(Console.Logs.logs_files_list) > 0:
+				Console.Logs.log(f"File dei logs parallelo creato presso: \"{os.path.normpath(logs_path)}\"")
+
+			Console.Logs.logs_files_list.append(File(logs_path))
+
+			Console.Logs.logs_file_path = logs_path
+			Console.do_we_use_logs = True
+
+
+		@staticmethod
+		def write_to_log_files(message: str, time_stamp: str = None, end_of_message: str = None) -> None:
+			''' Funzione per la scrittura ai vari file di log. '''
+
+			if not os.path.exists(Console.Logs.logs_file_path):
+
+				Console.Logs.Errors.fatal_error(f"Il file di log \"{Console.Logs.logs_file_path}\" non esiste")
+
+			if time_stamp is None:
+				time_stamp_value = datetime.now().strftime('%H:%M:%S')
+
+			else:
+				time_stamp_value = time_stamp
+
+			if end_of_message is None:
+				message = f"\t[{time_stamp_value}] - {message}.\n"
+
+			else:
+				message = f"\t[{time_stamp_value}] - {message + end_of_message}"
+
+			for log_file in Console.Logs.logs_files_list:
+				try:
+					with open(log_file.path, "a", encoding = "utf-8") as logs_file:
+						logs_file.write(message)	#* Scrittura al file.
+
+				except Exception as logs_file_handling_error:
+					Console.Logs.Errors.fatal_error(f"Durante la scrittura nel file di log \"{log_file.path}\" si è verificato il seguente errore: \"{logs_file_handling_error}\"")
+
+
+		@staticmethod
+		def log(console_message: str, *, show_to_console: bool = False, time_stamp: bool = None, end: str = None) -> None:
+			''' Funzionalità per la stampa di informazioni utili a terminale a fini di debug, abilitatile con \"Console.config(debug = True)\".
+
+			Il parametro "show_to_console" sovrascriverà la configurazione solo per l'istanza dove la sua funzione è stata chiamata. '''
+
+			time_stamp_value = datetime.now().strftime("%H:%M:%S")
+
+			if Console.debug is None:
+				Console.Logs.Errors.fatal_error("Mancata esecuzione del metodo: \"Console.config()\"", colored_output = True)
+
+			elif Console.debug is True or show_to_console is True:
+
+				if Console.colored_output is True:
+
+					if time_stamp is True:
+
+						if end is None:
+							print(f"\n[{time_stamp_value}]{Console.Colors.bold} - {Console.Colors.bg.orange}> {Console.Colors.reset} {Console.Colors.fg.green}[{time_stamp_value}] - {console_message}.{Console.Colors.reset}")	#* Stampa colorata con intestazione temporale.
+
+						else:
+							print(f"\n[{time_stamp_value}]{Console.Colors.bold} - {Console.Colors.bg.orange}> {Console.Colors.reset} {Console.Colors.fg.green}[{time_stamp_value}] - {console_message}.{Console.Colors.reset}", end = end)
+
+					else:
+
+						if end is None:
+							print(f"\n{Console.Colors.bold}{Console.Colors.bg.orange}> {Console.Colors.reset} {Console.Colors.fg.green}{console_message}.{Console.Colors.reset}")
+
+						else:
+							print(f"\n{Console.Colors.bold}{Console.Colors.bg.orange}> {Console.Colors.reset} {Console.Colors.fg.green}{console_message}{Console.Colors.reset}", end = end)
+
+				else:	# Se la stampa colorata è disabilitata:
+
+					if time_stamp is True:
+
+						if end is None:
+							print(f"\n> [{time_stamp_value}] - {console_message}.")
+
+						else:
+							print(f"\n> [{time_stamp_value}] - {console_message}", end = end)
+
+					else:	# Se l'intestazione temporale è disabilitata:
+
+						if end is None:
+							print(f"\n> {console_message}.")
+
+						else:
+							print(f"\n> {console_message}", end = end)
+
+			if Console.do_we_use_logs is True:
+
+				if end is None:
+					Console.Logs.write_to_log_files(console_message, time_stamp_value)
+
+				else:
+					Console.Logs.write_to_log_files(console_message, time_stamp_value, end_of_message = end)
+
+			elif Console.do_we_use_logs is None:
+				Console.Logs.Errors.fatal_error("Mancata esecuzione del metodo: \"Console.config()\"")
+
+
+		@staticmethod
+		def function_timer(_function: callable):
+			''' Funzionalità per la misurazione del tempo di esecuzione di una funzione. '''
+
+			def wrapper(*all_positional_arguments, **all_keywords_arguments):
+				start_time = datetime.now()
+
+				function_results = _function(*all_positional_arguments, **all_keywords_arguments)
+
+				end_time = datetime.now()
+
+				execution_time = end_time - start_time
+
+				Console.Logs.log(f'La funzione "{_function.__name__}({_function(*all_positional_arguments, **all_keywords_arguments)})" ha impiegato {execution_time} secondi per eseguire', show_to_console=True)
+
+				return function_results
+			return wrapper
+
+
+		class Errors:
+			''' Sottoclasse per la gestione degli errori. '''
+
+			@staticmethod
+			def error(error_message: str, *, show_to_console: bool = False, colored_output: bool = False, time_stamp: bool = None) -> None:
+				''' Metodo per la presentazione degli errori non fatali.
+				Per presentare errori fatali usare: "Console.Logs.Errors.fatal_error()". '''
+
+				if time_stamp is None:
+					time_stamp = Console.do_we_use_time_stamps
+
+				colored_output = Console.colored_output	# Sovrascrizione della variabile locale con la variabile della classe.
+				time_stamp_value = datetime.now().strftime("%H:%M:%S")	# Time stamp per i log.
+
+				if Console.do_we_use_logs is True:	# Se i log sono attivi:
+					Console.Logs.write_to_log_files(f"ERROR: {error_message}", time_stamp_value)
+
+				if Console.debug is True or show_to_console is True:
+					if Console.colored_output is True or colored_output is True:
+						if time_stamp is True:
+							print(f"\n[{time_stamp_value}]{Console.Colors.bold} - {Console.Colors.bg.red}ERROR{Console.Colors.reset}: {Console.Colors.fg.light_red}[{time_stamp_value}] - {error_message}.{Console.Colors.reset}")
+
+						else:
+							print(f"\n{Console.Colors.bold}{Console.Colors.bg.red}ERROR{Console.Colors.reset}{Console.Colors.bold}:{Console.Colors.reset} {Console.Colors.fg.light_red}{error_message}.{Console.Colors.reset}")
+
+					else:	# Se la stampa colorato non è attiva:
+						if time_stamp is True:
+							print(f"\nERROR: [{time_stamp_value}] - {error_message}.")
+
+						else:
+							print(f"\nERROR: {error_message}.")
+
+
+			@staticmethod
+			def fatal_error(error_message: str, *, colored_output: bool = False, do_we_write_to_log_file: bool = True) -> None:
+
+				''' Metodo per la presentazione degli errori fatali.
+				Per presentare errori non fatali usare: "Console.Logs.Errors.error()". '''
+				if Console.do_we_use_logs is True and do_we_write_to_log_file is True:	# Se i log sono attivi:
+					time_stamp_value = datetime.now().strftime("%H:%M:%S")	#* valore temporale per i log.
+
+					Console.Logs.write_to_log_files(f"FATAL ERROR: {error_message}", time_stamp_value)
+
+				print()
+				print(f"{Console.Colors.bold}{Console.Colors.bg.orange}{Console.Colors.fg.red}<{Console.Colors.reset}{Console.Colors.fg.red}", end="")
+				print("\u2588" * 125, end="")
+				print(f"{Console.Colors.bold}{Console.Colors.bg.orange}>{Console.Colors.reset}\n")
+
+				if Console.colored_output is True or colored_output is True:	# Se l'output colorato è stato abilitato in generale o per questo errore:
+					raise Exception(f"{Console.Colors.underline}{Console.Colors.fg.red}{error_message}{Console.Colors.reset}{Console.Colors.fg.red}.{Console.Colors.reset}\n\n")	#* Lancio dell errore.
+
+				else:
+					raise Exception(f"{error_message}.\n\n")
 
 
 	class Cursor:
-		" Sottoclasse per l'interazione con il cursore. "
+		''' Sottoclasse per l'interazione con il cursore. '''
 
 		@staticmethod
 		def move_to(x: int, y: int) -> None:
-			"Funzionalità per lo spostamento del cursore nel terminale."
+			''' Funzionalità per lo spostamento del cursore nel terminale. '''
 			# Preso da: https://github.com/gravmatt/py-term.
 
 			if not (x > 0 and y > 0):	# Se le coordinate sono negative o nulle:
-				Console.fatal_error(f'Le coordinate minime inseribili sono: "(1; 1)" non "({x}; {y})"')
+				Console.Logs.Errors.fatal_error(f"Le coordinate minime inseribili sono: \"(1; 1)\" non \"({x}; {y})\"")
 
 			else:
 				sys_stdout.write(f'\033[{y};{x}f')	#* Spostamento del cursore.
@@ -407,18 +380,52 @@ class Console:
 
 		@staticmethod
 		def reset() -> None:
+			''' Funzionalità per il riposizionamento del cursore nel terminale. '''
+
 			sys_stdout.write('\033[H')
 			sys_stdout.flush()
+
+
+		@staticmethod
+		def del_lines(lines_number: int = 2) -> None:
+			''' Eliminazione di un numero dato di linee dal terminale. '''
+
+			if lines_number < 1:
+				Console.Logs.Errors.fatal_error(f"Il minimo di line eliminabili è 1, non \"{lines_number}\"")
+
+			for i in range(lines_number):
+				sys_stdout.write("\033[F")
+				sys_stdout.write("\033[K")
+				sys_stdout.flush()
+
+
+	@staticmethod
+	def file_path_input(pre_input_text: str = '') -> str:
+		''' Autocompletatore per i percorsi file '''
+
+		# Generato da I.A.
+
+		try:
+			from prompt_toolkit import prompt # type: ignore
+			from prompt_toolkit.completion import PathCompleter # type: ignore
+
+		except ModuleNotFoundError:
+			Console.Logs.Errors.fatal_error('Mancate il modulo: "prompt_toolkit"')
+
+
+		results = prompt(pre_input_text, completer = PathCompleter(only_directories = False, expanduser = True))
+		return results
+
 
 # =================================================================================================================== #
 
 class File:
-	"Funzionalità per la gestione e interazione con i file."
+	''' Funzionalità per la gestione e interazione con i file. '''
 
 	def __init__(self, path: str) -> None:
 
 		if  not os.path.exists(path):	# Se il percorso file non esiste:
-			Console.fatal_error(f"Il percorso file: \"{path}\" non esiste")
+			Console.Logs.Errors.fatal_error(f"Il percorso file: \"{path}\" non esiste")
 
 		self.path = os.path.normpath(os.path.realpath(path))
 
@@ -428,12 +435,15 @@ class File:
 
 		self.directory_name = os.path.basename(os.path.dirname(self.path))
 
-		with open(self.path, "r") as file:
-			self.content = file.read()
+		try:
+			with open(self.path, "r") as file:
+				self.content = file.read()
+		except Exception as file_reading_error:
+			Console.Logs.Errors.fatal_error(f"Durante la lettura del file \"{self.path}\" si è verificato il seguente errore: \"{file_reading_error}\"")
 
 
 	def write(self, content: str, binary: bool = False) -> None:
-		" Scrivere nel file. "
+		''' Scrittura a file. '''
 
 		self.content = content
 
@@ -451,29 +461,29 @@ class File:
 
 		content = rf"{content}"
 		if len(content) > 25:
-			Console.log(f'Scrittura al file "{self.path}" completata')
+			Console.Logs.log(f'Scrittura al file "{self.path}" completata')
 
 		else:
-			Console.log(f'Scrittura di "{content}" al file "{self.path}" completata')
+			Console.Logs.log(f'Scrittura di "{content}" al file "{self.path}" completata')
 
 
 	def delete(self) -> None:
-		" Eliminare il file e l'istanza associata. "
+		''' Eliminazione del file e dell'istanza associata. '''
 
 		os.remove(self.path)	#* Eliminare il file.
-		Console.log(f'File "{self.path}" eliminato')
+		Console.Logs.log(f'File "{self.path}" eliminato')
 		del self	#* Eliminare l'istanza.
 
 
 	def __str__(self) -> str:
-		"Rappresentazione in stringa di un file, comprende il suo nome e percorso."
+		''' Rappresentazione in stringa di un file, comprende il suo nome e percorso. '''
 		return f'''[{self.name} -> '{self.path}']'''
 
 
 	@staticmethod
 	def path_exist(path: str) -> bool:
-		''' Verificare se il percorso esiste.
-  			\n(wrapper di "os.path.exists()") '''
+		''' Verificare se il percorso esiste.\n
+  			(wrapper di \"os.path.exists()\") '''
 		return os.path.exists(path)
 
 
@@ -492,15 +502,15 @@ class File:
 			path = os.path.join(path, file_name)	#* Aggiungilo al percorso da creare.
 
 		if os.path.exists(path):	# Se il percorso file non esiste:
-			Console.fatal_error(f"Il percorso \"{path}\" esiste gia")	#* Lancia un errore.
+			Console.Logs.Errors.fatal_error(f"Il percorso \"{path}\" esiste gia")	#* Lancia un errore.
 
 		if not os.path.exists(os.path.dirname(path)):	# Se la cartella contenitrice non esiste:
 			os.makedirs(os.path.dirname(path))	#* Creazione cartella contenitrice.
-			Console.log(f"Cartella \"{os.path.dirname(path)}\" creata")
+			Console.Logs.log(f"Cartella \"{os.path.dirname(path)}\" creata")
 
 		if file_name is None:
 			os.makedirs(path)
-			Console.log(f'Cartella "{path}" creata')
+			Console.Logs.log(f'Cartella "{path}" creata')
 
 		else:
 			try:
@@ -508,42 +518,85 @@ class File:
 				file.close()
 
 			except Exception as file_handling_error:
-				Console.fatal_error(f"Durante la creazione del file: \"{path}\" si è verificato il seguente errore: \"{file_handling_error}\"")
+				Console.Logs.Errors.fatal_error(f"Durante la creazione del file: \"{path}\" si è verificato il seguente errore: \"{file_handling_error}\"")
 
 			else:
-				Console.log(f'File "{path}" creato')
+				Console.Logs.log(f'File "{path}" creato')
 				return File(path)
 
 
 	@staticmethod
 	def delete_file_at_path(path: str) -> None:
-		''' Eliminare il file al percorso dato, wrapper di "os.remove()" '''
+		''' Elimina il file al percorso dato, wrapper di \"os.remove()\" '''
 
-		if os.path.exists(path):
-			os.remove(path)
-			Console.log(f"File \"{path}\" eliminato")
+		if not os.path.exists(path):	# Se il percorso non esiste:
+			Console.Logs.Errors.error(f"Impossibile eliminare il \"{path}\" perché non esiste")
+
+		if os.path.isfile(path):
+			is_file = True
 
 		else:
-			Console.fatal_error(f"Il file \"{path}\" non esiste")
+			is_file = False
+
+		if is_file is True:
+
+			try:
+				os.remove(path)
+
+			except Exception as file_handling_error:
+				Console.Logs.Errors.fatal_error(f"Durante l'eliminazione del file \"{path}\" si sono verificati i seguenti errori: \"{file_handling_error}\"")
+
+			else:
+				Console.Logs.log(f"File \"{path}\" eliminato")
+
+		else:
+			try:
+				shutil_remove_tree(path)
+
+			except Exception as file_handling_error:
+				Console.Logs.Errors.fatal_error(f"Durante l'eliminazione della cartella \"{path}\" si sono verificati i seguenti errori: \"{file_handling_error}\"")
+
+			else:
+				Console.Logs.log(f"Cartella \"{path}\" eliminato")
+
+
+	@staticmethod
+	def move_file(from_path: str, to_path: str) -> None:
+		''' Muovere il file dal percorso specificato a quello dato. '''
+
+		if not os.path.exists(from_path):	# Se il percorso da muovere non esiste:
+			Console.Logs.Errors.fatal_error(f"Il percorso \"{from_path}\" non esiste")
+
+		if os.path.exists(to_path):	# Se il percorso di destinazione esiste:
+			Console.Logs.Errors.error(f"Impossibile spostare il file \"{from_path}\" in quanto gia presente presso \"{to_path}\"")
+
+		try:
+			shutil_move(from_path, to_path)
+
+		except Exception as file_handling_error:
+			Console.Logs.Errors.fatal_error(f"Durante il movimento del file \"{from_path}\" si sono verificati i seguenti errori: \"{file_handling_error}\"")
+
+		else:
+			Console.Logs.log(f"File \"{from_path}\" spostato in \"{to_path}\"")
 
 # =================================================================================================================== #
 
 class Web_kit:
-	"Funzionalità per lo sviluppo di server web."
+	''' Funzionalità per lo sviluppo di server web. '''
 
 	statics_path = None
 
 	@staticmethod
-	def config(*, statics_path: str = "static") -> None:
-		'''Metodo di configurazione della funzionalità Web_kit.
+	def config(*, statics_path: str = 'statics') -> None:
+		''' Metodo di configurazione della funzionalità Web_kit.
 
-		- È possibile specificare il percorso delle risorse statiche.'''
+		- È possibile specificare il percorso delle risorse statiche. '''
 
 		if os.path.exists(statics_path):
 			Web_kit.statics_path = statics_path
 
 		else:
-			Console.fatal_error(f'Il percorso "{statics_path}" non esiste')
+			Console.Logs.Errors.fatal_error(f"Il percorso \"{statics_path}\" non esiste")
 
 
 	@staticmethod
@@ -558,17 +611,17 @@ class Web_kit:
 			with open(page_file_path, "r") as page_file:
 				page_content = page_file.read()	#* Rendering della pagina.
 
-			Console.log(f'Pagina "{page_file_name}" caricata da: "{page_file_path}" con successo.')
+			Console.Logs.log(f"Pagina \"{page_file_name}\" caricata da: \"{page_file_path}\" con successo.")
 			return page_content
 
 		else:
-			Console.error(f'Errore: "{page_file_path}" non esiste')
+			Console.Logs.Errors.error(f"Errore: \"{page_file_path}\" non esiste")
 			return f'Errore: "{page_file_path}" non esiste.'
 
 # =================================================================================================================== #
 
 class List:
-	"Funzionalità per la gestione di liste."
+	''' Funzionalità per la gestione di liste. '''
 
 	@staticmethod
 	def create_random_list(list_length: int, minimum_value: int, maximum_value: int) -> list[int]:
@@ -610,7 +663,7 @@ class List:
 
 	@staticmethod
 	def duplicates_counter(List: list) -> dict:
-		" Ritorna un dizionario con il numero di occorrenze di ogni elemento nella lista data. "
+		''' Ritorna un dizionario con il numero di occorrenze di ogni elemento nella lista data. '''
 
 		counter: dict = {}
 
@@ -628,21 +681,21 @@ class Math:
 	''' Funzionalità per l'implementazione di varie funzioni matematiche. '''
 
 	@staticmethod
-	def factorial(x: int) -> int:
-		''' Funzionalità per il calcolo del fattoriale di un intero. '''
+	def factorial(n: int) -> int:
+		''' Ritorna il fattoriale del numero dato. '''
 
-		if x < 0:
-			Console.fatal_error(f'Il fattoriale di un {x} < 0 supportato')
+		if n < 0:
+			Console.Logs.Errors.fatal_error(f'Il fattoriale di un {n} < 0 non é supportato')
 
 		r: int = 1
-		for i in range(1, x + 1):
+		for i in range(1, n + 1):
 			r *= i
 		return r
 
 
 	@staticmethod
 	def fibonacci(n: int) -> int:
-		" Ritorna l'n-esimo numero nella sequenza di Fibonacci. "
+		''' Ritorna l'n-esimo numero nella sequenza di Fibonacci. '''
 
 		if n <= 0:
 			return 0
@@ -658,39 +711,53 @@ class Math:
 
 			return b
 
+
+	@staticmethod
+	def is_prime(n: int) -> bool:
+		''' Ritorna vero se un numero è primo. '''
+
+		if n < 2:
+			return False
+
+		for i in range(2, int(n ** 0.5) + 1):
+			if n % i == 0:
+				return False
+
+		return True
+
 # =================================================================================================================== #
 
 class Physic:
-	"Classe per il calcolo con grandezze fisiche tenendo conto delle incertezze."
+	''' Classe per il calcolo con grandezze fisiche tenendo conto delle incertezze. '''
 
-	supported_units = ("km", "hm", "dam", "m", "dm", "cm", "mm", "km²", "hm²", "dam²", "m²", "dm²", "cm²", "mm²")
+	supported_units = ('km', 'hm', 'dam', 'm', 'dm', 'cm', 'mm', 'km²', 'hm²', 'dam²', 'm²', 'dm²', 'cm²', 'mm²')
 
 	def __init__(self, measure: int | float, uncertainty: int | float, unit: str) -> None:
 
 		if not isinstance(measure, (int, float)):
-			Console.fatal_error(f'La misura "{measure}" non è un numero supportato')
+			Console.Logs.Errors.fatal_error(f"La misura \"{measure}\" non è un numero supportato")
 
 		if not isinstance(uncertainty, (int, float)):
-			Console.fatal_error(f'''L'incertezza "{uncertainty}" non è un numero supportato''')
+			Console.Logs.Errors.fatal_error(f"L'incertezza \"{uncertainty}\" non è un numero supportato")
 
 		if not isinstance(unit, str):
-			Console.fatal_error(f'''L'unità "{unit}" non è una stringa supportata''')
+			Console.Logs.Errors.fatal_error(f"L'unità \"{unit}\" non è una stringa supportata")
 
 		if unit not in self.supported_units:
-			Console.fatal_error(f'''L'unità "{unit}" non è supportata''')
+			Console.Logs.Errors.fatal_error(f"L'unità \"{unit}\" non è supportata")
 
 		self.measure = measure
 		self.uncertainty = uncertainty
 		self.unit = unit
 
 
-	def __add__(self, other: "Physic") -> "Physic":
+	def __add__(self, other: 'Physic') -> 'Physic':
 
 		if type(self) is not Physic or type(other) is not Physic:
-			Console.fatal_error(f'Non sono supportate le operazioni tra "{self}" di tipo: "{type(self)}" e "{other}" di tipo "{type(other)}"')
+			Console.Logs.Errors.fatal_error(f"Non sono supportate le operazioni tra \"{self}\" di tipo: \"{type(self)}\" e \"{other}\" di tipo \"{type(other)}\"")
 
 		if self.unit != other.unit:
-			Console.fatal_error(f'Non sono supportate le operazioni tra "{self}" di unità "{self.unit}" e "{other}" di unità "{other.unit}"')
+			Console.Logs.Errors.fatal_error(f"Non sono supportate le operazioni tra \"{self}\" di unità \"{self.unit}\" e \"{other}\" di unità \"{other.unit}\"")
 
 		resulting_measure = self.measure + other.measure
 		resulting_uncertainty = self.uncertainty + other.uncertainty
@@ -701,10 +768,10 @@ class Physic:
 	def __sub__(self, other: "Physic") -> "Physic":
 
 		if type(self) is not Physic or type(other) is not Physic:
-			Console.fatal_error(f'Non sono supportate le operazioni tra "{self}" di tipo: "{type(self)}" e "{other}" di tipo"{type(other)}"')
+			Console.Logs.Errors.fatal_error(f"Non sono supportate le operazioni tra \"{self}\" di tipo: \"{type(self)}\" e \"{other}\" di tipo \"{type(other)}\"")
 
 		if self.unit != other.unit:
-			Console.fatal_error(f'Non sono supportate le operazioni tra "{self}" di unità "{self.unit}" e "{other}" di unità "{other.unit}"')
+			Console.Logs.Errors.fatal_error(f"Non sono supportate le operazioni tra \"{self}\" di unità \"{self.unit}\" e \"{other}\" di unità \"{other.unit}\"")
 
 		resulting_measure = self.measure - other.measure
 		resulting_uncertainty = self.uncertainty + other.uncertainty
@@ -715,10 +782,10 @@ class Physic:
 	def __mul__(self, other: "Physic") -> "Physic":
 
 		if type(self) is not Physic or type(other) is not Physic:
-			Console.fatal_error(f'Non sono supportate le operazioni tra "{self}" di tipo: "{type(self)}" e "{other}" di tipo"{type(other)}"')
+			Console.Logs.Errors.fatal_error(f"Non sono supportate le operazioni tra \"{self}\" di tipo: \"{type(self)}\" e \"{other}\" di tipo \"{type(other)}\"")
 
 		if self.unit != other.unit:
-			Console.fatal_error(f'Non sono supportate la moltiplicazione tra tra "{self}" di unità "{self.unit}" e "{other}" di unità "{other.unit}"')
+			Console.Logs.Errors.fatal_error(f"Non sono supportate la moltiplicazione tra tra \"{self}\" di unità \"{self.unit}\" e \"{other}\" di unità \"{other.unit}\"")
 
 		resulting_measure = self.measure * other.measure
 
@@ -733,10 +800,10 @@ class Physic:
 	def __truediv__(self, other: "Physic") -> "Physic":
 
 		if type(self) is not Physic or type(other) is not Physic:
-			Console.fatal_error(f'Non sono supportate le operazioni tra "{self}" di tipo: "{type(self)}" e "{other}" di tipo"{type(other)}"')
+			Console.Logs.Errors.fatal_error(f"Non sono supportate le operazioni tra \"{self}\" di tipo: \"{type(self)}\" e \"{other}\" di tipo \"{type(other)}\"")
 
 		if self.unit != other.unit:
-			Console.fatal_error(f'Non sono supportate la moltiplicazione tra tra "{self}" di unità "{self.unit}" e "{other}" di unità "{other.unit}"')
+			Console.Logs.Errors.fatal_error(f"Non sono supportate la moltiplicazione tra tra \"{self}\" di unità \"{self.unit}\" e \"{other}\" di unità \"{other.unit}\"")
 
 		resulting_measure = self.measure / other.measure
 
@@ -751,6 +818,74 @@ class Physic:
 
 # =================================================================================================================== #
 
-def swap(a, b):
-	a, b = b, a
-	return a, b
+def is_library_installed(library_name: str) -> bool:
+	''' Ritorna vero se una libreria è installata. '''
+
+	spec = find_spec(library_name)
+	return spec is not None
+
+
+def create_virtual_environment(virtual_environment_path: str = "./" , virtual_environment_name: str = '.venv'):
+	'''
+		Crea un ambiente virtuale Python e presso il percorso specificato.
+		È possibile specificare in nome dell'ambiente virtuale.
+	'''
+
+	virtual_environment_path = os.path.join(virtual_environment_path, virtual_environment_name)
+
+	if os.path.exists(virtual_environment_path):
+		Console.Logs.Errors.fatal_error(f"Il percorso \"{virtual_environment_path}\" esiste gia")
+
+	from venv import create as venv_create
+	venv_create(virtual_environment_path, clear = True)	#* Creazione dell'ambiente virtuale.
+	Console.Logs.log(f"Ambiente virtuale creato in: \"{virtual_environment_path}\"")
+
+
+def compile_file(file_path: str, executable_name: str, icon_path: str = None) -> None:
+	'''
+		Compila un file Python in un eseguibile usando Pyinstaller.
+		È possibile specificare l'icona dell'eseguibile.
+		È possibile specificare il nome dell'eseguibile.
+	'''
+
+	if not is_library_installed('pyinstaller'):
+		Console.Logs.Errors.fatal_error("Per la compilazione di un file è necessario il modulo \"Pyinstaller\" che non risulta installato")
+
+	file_path = os.path.normpath(file_path) #TODO: percorso file relativo alla cartella del progetto
+	icon_path = os.path.normpath(icon_path)
+	executable_name = executable_name.strip()
+
+	if not os.path.exists(file_path):
+		Console.Logs.Errors.fatal_error(f"Il percorso: \"{file_path}\" non esiste")
+
+	if not os.path.isfile(file_path):
+		Console.Logs.Errors.fatal_error(f"Il percorso: \"{file_path}\" non è un file")
+
+	if not os.path.exists(icon_path):
+		Console.Logs.Errors.fatal_error(f"Il percorso: \"{icon_path}\" non esiste")
+
+	if not os.path.isfile(icon_path):
+		Console.Logs.Errors.fatal_error(f"Il percorso: \"{icon_path}\" non è un file")
+
+	if executable_name in ("", " ", None):
+		Console.Logs.Errors.fatal_error(f"Il nome dell'eseguibile \"{executable_name}\" non è supportato")
+
+	Console.Logs.log(f"Inizio compilazione del file \"{file_path}\"")
+	print()
+
+	try:
+
+		if icon_path is not None:
+			subprocess.run(["pyinstaller", "./" + file_path, "--onefile", f"--icon={icon_path}", f'--name={executable_name}'])
+
+		else:
+			subprocess.run(["pyinstaller", "./" + file_path, "--onefile", f'--name={executable_name}'])
+
+	except subprocess.CalledProcessError as called_process_error:
+		Console.Logs.Errors.fatal_error(f"Durante la compilazione del file \"{file_path}\" si sono verificati i seguenti errori: \"{called_process_error}\"")
+
+	except Exception as compilation_error:
+		Console.Logs.Errors.fatal_error(f"Durante la compilazione del file \"{file_path}\" si sono verificati i seguenti errori: \"{compilation_error}\"")
+
+	else:
+		Console.Logs.log(f"File \"{file_path}\" compilato con successo")
