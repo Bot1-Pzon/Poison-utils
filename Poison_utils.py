@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
 # Metadati:
 __doc__ = "docstring w.i.p."
-__version__ = "2.0.0"
+__version__ = '2.0.1'
 
 spell = """Ain't it hard to stumble
 and land in the wrong side of the lagoon,
@@ -220,7 +220,7 @@ class Console:
 
 			for log_file in Console.Logs.logs_files_list:
 				try:
-					with open(log_file.path, "a", encoding = "utf-8") as logs_file:
+					with open(log_file.path, "a", encoding = 'utf-8') as logs_file:
 						logs_file.write(message)	#* Scrittura al file.
 
 				except Exception as logs_file_handling_error:
@@ -367,7 +367,7 @@ class Console:
 
 		@staticmethod
 		def move_to(x: int, y: int) -> None:
-			''' Funzionalità per lo spostamento del cursore nel terminale. '''
+			''' Sposta il cursore del terminale alle coordinate date. '''
 			# Preso da: https://github.com/gravmatt/py-term.
 
 			if not (x > 0 and y > 0):	# Se le coordinate sono negative o nulle:
@@ -387,8 +387,8 @@ class Console:
 
 
 		@staticmethod
-		def del_lines(lines_number: int = 2) -> None:
-			''' Eliminazione di un numero dato di linee dal terminale. '''
+		def delete_lines(lines_number: int = 2) -> None:
+			''' Cancella il numero dato di linee dal terminale. '''
 
 			if lines_number < 1:
 				Console.Logs.Errors.fatal_error(f"Il minimo di line eliminabili è 1, non \"{lines_number}\"")
@@ -403,14 +403,18 @@ class Console:
 	def file_path_input(pre_input_text: str = '') -> str:
 		''' Autocompletatore per i percorsi file '''
 
-		# Generato da I.A.
+		if Dependencies.is_library_imported('prompt_toolkit') is False:
+			Console.Logs.Errors.fatal_error("Mancate il modulo: \"prompt_toolkit\"")
 
 		try:
 			from prompt_toolkit import prompt # type: ignore
 			from prompt_toolkit.completion import PathCompleter # type: ignore
 
 		except ModuleNotFoundError:
-			Console.Logs.Errors.fatal_error('Mancate il modulo: "prompt_toolkit"')
+			Console.Logs.Errors.fatal_error("Mancate il modulo: \"prompt_toolkit\"")
+
+		except Exception as prompt_toolkit_error_import_error:
+			Console.Logs.Errors.fatal_error(f"Durante l'importazione del modulo \"prompt_toolkit\" si sono verificati i seguenti errori: \"{prompt_toolkit_error_import_error}\"")
 
 
 		results = prompt(pre_input_text, completer = PathCompleter(only_directories = False, expanduser = True))
@@ -450,21 +454,21 @@ class File:
 		if binary is True:
 			writing_method = "wb"
 			encoding = None
-			content = bytes(self.content, "utf-8")
+			content = bytes(self.content, 'utf-8')
 
 		else:
 			writing_method = "w"
-			encoding = "utf-8"
+			encoding = 'utf-8'
 
 		with open(self.path, writing_method, encoding = encoding) as file:
 			file.write(content)
 
 		content = rf"{content}"
 		if len(content) > 25:
-			Console.Logs.log(f'Scrittura al file "{self.path}" completata')
+			Console.Logs.log(f"Scrittura al file \"{self.path}\" completata")
 
 		else:
-			Console.Logs.log(f'Scrittura di "{content}" al file "{self.path}" completata')
+			Console.Logs.log(f"Scrittura di \"{content}\" al file \"{self.path}\" completata")
 
 
 	def delete(self) -> None:
@@ -477,20 +481,24 @@ class File:
 
 	def __str__(self) -> str:
 		''' Rappresentazione in stringa di un file, comprende il suo nome e percorso. '''
-		return f'''[{self.name} -> '{self.path}']'''
+		return f"[{self.name} -> '{self.path}']"
 
 
 	@staticmethod
 	def path_exist(path: str) -> bool:
-		''' Verificare se il percorso esiste.\n
-  			(wrapper di \"os.path.exists()\") '''
+		'''
+			Verificare se il percorso esiste.\n
+			(wrapper di \"os.path.exists()\")
+		'''
 		return os.path.exists(path)
 
 
 	@staticmethod
 	def create_complete_path(path: str, file_name: str = None) -> "File":
-		''' Crea il percorso completo di cartelle e file.\n
-			Se si desidera creare solo cartelle non specificare \"file_name\".'''
+		'''
+			Crea il percorso completo di cartelle e file.\n
+			Se si desidera creare solo cartelle non specificare \"file_name\".
+		'''
 
 		if file_name is not None:
 			path = os.path.normpath(os.path.join(path, file_name))
@@ -568,16 +576,16 @@ class File:
 			Console.Logs.Errors.fatal_error(f"Il percorso \"{from_path}\" non esiste")
 
 		if os.path.exists(to_path):	# Se il percorso di destinazione esiste:
-			Console.Logs.Errors.error(f"Impossibile spostare il file \"{from_path}\" in quanto gia presente presso \"{to_path}\"")
+			Console.Logs.Errors.error(f"Impossibile spostare (\"{from_path}\" -> \"{to_path}\") in quanto gia presente alla destinazione")
 
 		try:
 			shutil_move(from_path, to_path)
 
 		except Exception as file_handling_error:
-			Console.Logs.Errors.fatal_error(f"Durante il movimento del file \"{from_path}\" si sono verificati i seguenti errori: \"{file_handling_error}\"")
+			Console.Logs.Errors.fatal_error(f"Durante il movimento del file (\"{from_path}\" -> \"{to_path}\") si sono verificati i seguenti errori: \"{file_handling_error}\"")
 
 		else:
-			Console.Logs.log(f"File \"{from_path}\" spostato in \"{to_path}\"")
+			Console.Logs.log(f"Avvenuto spostamento file: (\"{from_path}\" -> \"{to_path}\")")
 
 # =================================================================================================================== #
 
@@ -601,9 +609,10 @@ class Web_kit:
 
 	@staticmethod
 	def page_render(page_file_name: str) -> str:
-		''' Funzionalità che permette il rendering di documenti ".html" specificando il nome del file.
-
-		- page_file_name: Nome del file della pagina che si intende caricare. '''
+		'''
+			Funzionalità che permette il rendering di documenti ".html" specificando il nome del file.
+			- page_file_name: Nome del file della pagina che si intende caricare.
+		'''
 
 		page_file_path = os.path.join(Web_kit.statics_path, page_file_name)
 
@@ -624,10 +633,14 @@ class List:
 	''' Funzionalità per la gestione di liste. '''
 
 	@staticmethod
-	def create_random_list(list_length: int, minimum_value: int, maximum_value: int) -> list[int]:
-		"Funzionalità per la creazione di una lista casuale dalla lunghezza e range dei valori specificati."
+	def create_random_list(list_length: int = None, minimum_value: int = 0, maximum_value: int = 999) -> list[int]:
+		''' Restituisce una lista casuale di interi dalla lunghezza e dal range di valori specificato specificato. '''
 
-		random_list = []
+		if list_length is None:
+			list_length = random_integer(1, 500)
+
+		random_list: list[int] = []
+
 		for _ in range(list_length):
 			random_list.append(random_integer(minimum_value, maximum_value))	#* Inserimento nella lista casuale.
 
@@ -662,12 +675,12 @@ class List:
 
 
 	@staticmethod
-	def duplicates_counter(List: list) -> dict:
+	def duplicates_counter(list_to_count: list) -> dict[int: int]:
 		''' Ritorna un dizionario con il numero di occorrenze di ogni elemento nella lista data. '''
 
-		counter: dict = {}
+		counter: dict[int: int] = {}
 
-		for element in List:
+		for element in list_to_count:
 			if element in counter:
 				counter[element] += 1	#* Incremento del valore del contatore
 			else:
@@ -818,12 +831,52 @@ class Physic:
 
 # =================================================================================================================== #
 
-def is_library_installed(library_name: str) -> bool:
-	''' Ritorna vero se una libreria è installata. '''
+class Dependencies:
+	''' Classe per la gestione delle dipendenze. '''
 
-	spec = find_spec(library_name)
-	return spec is not None
+	@staticmethod
+	def is_library_imported(library_name: str) -> bool:
+		''' Ritorna vero se una libreria è installata. '''
 
+		spec = find_spec(library_name)
+		return spec is not None
+
+
+	def is_package_installed(package_name):
+
+		try:
+			subprocess.check_output(['pip', 'show', package_name])
+			Console.Logs.log(f"Il pacchetto \"{package_name}\" risulta installato")
+			return True
+
+		except subprocess.CalledProcessError:
+			Console.Logs.log(f"Il pacchetto \"{package_name}\" non risulta installato")
+			return False
+
+		except Exception as package_installation_error:
+			Console.Logs.Errors.fatal_error(f"Durante l'installazione del pacchetto \"{package_name}\" si sono verificati i seguenti errori: \"{package_installation_error}\"")
+
+
+	@staticmethod
+	def install_library(library_name: str) -> None:
+		''' Installa la libreria data. '''
+
+		Console.Logs.log(f"Inizio installazione della libreria \"{library_name}\"")
+
+		if Dependencies.is_library_imported(library_name):
+			Console.Logs.Errors.error(f"impossibile installare la libreria \"{library_name}\" perché risulta gia installata")
+			return
+
+		try:
+			subprocess.call(["pip", "install", library_name])
+
+		except Exception as library_installation_error:
+			Console.Logs.Errors.fatal_error(f"Durante l'installazione della libreria \"{library_name}\" si sono è verificato il seguente errore: \"{library_installation_error}\"")
+
+		else:
+			Console.Logs.log(f"Installata la libreria \"{library_name}\"")
+
+# =================================================================================================================== #
 
 def create_virtual_environment(virtual_environment_path: str = "./" , virtual_environment_name: str = '.venv'):
 	'''
@@ -836,19 +889,24 @@ def create_virtual_environment(virtual_environment_path: str = "./" , virtual_en
 	if os.path.exists(virtual_environment_path):
 		Console.Logs.Errors.fatal_error(f"Il percorso \"{virtual_environment_path}\" esiste gia")
 
-	from venv import create as venv_create
-	venv_create(virtual_environment_path, clear = True)	#* Creazione dell'ambiente virtuale.
-	Console.Logs.log(f"Ambiente virtuale creato in: \"{virtual_environment_path}\"")
+	try:
+		subprocess.run(["python", "-m", "venv", virtual_environment_path])
+
+	except Exception as virtual_environment_creation_error:
+		Console.Logs.Errors.fatal_error(f"Durante la creazione dell'ambiente virtuale \"{virtual_environment_path}\" si sono verificati i seguenti errori: \"{virtual_environment_creation_error}\"")
+
+	else:
+		Console.Logs.log(f"Creato ambiente virtuale presso \"{virtual_environment_path}\"")
 
 
 def compile_file(file_path: str, executable_name: str, icon_path: str = None) -> None:
 	'''
-		Compila un file Python in un eseguibile usando Pyinstaller.
+		Compila un file Python in un eseguibile usando Pyinstaller.\n
+		È possibile specificare il nome dell'eseguibile.\n
 		È possibile specificare l'icona dell'eseguibile.
-		È possibile specificare il nome dell'eseguibile.
 	'''
 
-	if not is_library_installed('pyinstaller'):
+	if not Dependencies.is_package_installed('pyinstaller'):
 		Console.Logs.Errors.fatal_error("Per la compilazione di un file è necessario il modulo \"Pyinstaller\" che non risulta installato")
 
 	file_path = os.path.normpath(file_path) #TODO: percorso file relativo alla cartella del progetto
@@ -889,3 +947,30 @@ def compile_file(file_path: str, executable_name: str, icon_path: str = None) ->
 
 	else:
 		Console.Logs.log(f"File \"{file_path}\" compilato con successo")
+
+
+def execute_executable(executable_path: str) -> None:
+	''' Esegue l'eseguibile compilato. '''
+
+	if not os.path.exists(executable_path):
+		Console.Logs.Errors.fatal_error(f"Impossibile eseguire il file: \"{executable_path}\" perché non esiste")
+
+	if not os.path.isfile(executable_path):
+		Console.Logs.Errors.fatal_error(f"Impossibile eseguire il file: \"{executable_path}\" perché non é un file")
+
+	if not os.access(executable_path, os.X_OK):
+		Console.Logs.Errors.fatal_error(f"Impossibile eseguire il file: \"{executable_path}\" perché non risulta eseguibile")
+
+	if os.path.splitext(executable_path) == '.exe':
+		Console.Logs.Errors.fatal_error(f"Impossibile eseguire il file: \"{executable_path}\" perché non è un eseguibile")
+
+	Console.Logs.log(f"Inizio esecuzione dell'eseguibile \"{executable_path}\"")
+
+	try:
+		subprocess.run(executable_path)
+
+	except Exception as execution_error:
+		Console.Logs.Errors.fatal_error(f"Durante l'esecuzione dell'eseguibile \"{executable_path}\" si sono verificati i seguenti errori: \"{execution_error}\"")
+
+	else:
+		Console.Logs.log(f"L'eseguibile \"{executable_path}\" è stato eseguito con successo")
