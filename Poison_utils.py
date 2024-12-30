@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
 # Metadati:
 __doc__ = "docstring w.i.p."
-__version__ = '2.0.1'
+__version__ = '2.0.2'
 
 spell = """Ain't it hard to stumble
 and land in the wrong side of the lagoon,
@@ -76,7 +76,10 @@ class Console:
 
 	@staticmethod
 	def clear() -> None:
-		''' Metodo per la pulizia del terminale. '''
+		'''
+			Pulisce il terminale.\n
+			Wrapper di "os.system('clear')" o "os.system('cls')" a seconda del sistema operativo.
+		'''
 
 		if Console.terminal_cleaning_method is None:
 			Console.Logs.Errors.fatal_error('Specificare il metodo di pulizia della schermo presso il metodo: "Console.config(screen_cleaning_method=...)"')
@@ -103,7 +106,10 @@ class Console:
 
 	@staticmethod
 	def stop() -> None:
-		''' Funzionalità per arrestare il programma. '''
+		'''
+			Arresta il programma.\n
+			Wrapper di "sys.exit()."
+		'''
 		Console.Logs.log("Il programma è stato terminato tramite istruzione")
 		sys_exit()
 
@@ -159,7 +165,7 @@ class Console:
 		@staticmethod
 		def create_logs_folder(logs_path: str = "./", logs_directory_name: str = "Logs", logs_file_name: str = "logs.log") -> None:
 
-			''' Funzione per la creazione della cartella e dei file di log. '''
+			''' Crea la cartella e i file di log. '''
 
 			initial_time_stamp = datetime.now().strftime("%d/%m/%Y - %H:%M")
 
@@ -200,7 +206,7 @@ class Console:
 
 		@staticmethod
 		def write_to_log_files(message: str, time_stamp: str = None, end_of_message: str = None) -> None:
-			''' Funzione per la scrittura ai vari file di log. '''
+			''' Scrive ai vari file di log. '''
 
 			if not os.path.exists(Console.Logs.logs_file_path):
 
@@ -228,10 +234,11 @@ class Console:
 
 
 		@staticmethod
-		def log(console_message: str, *, show_to_console: bool = False, time_stamp: bool = None, end: str = None) -> None:
-			''' Funzionalità per la stampa di informazioni utili a terminale a fini di debug, abilitatile con \"Console.config(debug = True)\".
-
-			Il parametro "show_to_console" sovrascriverà la configurazione solo per l'istanza dove la sua funzione è stata chiamata. '''
+		def log(console_message: str, /, *, show_to_console: bool = False, time_stamp: bool = None, end: str = None) -> None:
+			'''
+				Stampa di informazioni utili a terminale a fini di debug, abilitatile con \"Console.config(debug = True)\".\n
+				Il parametro "show_to_console" sovrascriverà la configurazione solo per l'istanza dove la sua funzione è stata chiamata.
+			'''
 
 			time_stamp_value = datetime.now().strftime("%H:%M:%S")
 
@@ -290,7 +297,7 @@ class Console:
 
 		@staticmethod
 		def function_timer(_function: callable):
-			''' Funzionalità per la misurazione del tempo di esecuzione di una funzione. '''
+			''' Misura e logga il tempo di esecuzione di una funzione. '''
 
 			def wrapper(*all_positional_arguments, **all_keywords_arguments):
 				start_time = datetime.now()
@@ -301,7 +308,7 @@ class Console:
 
 				execution_time = end_time - start_time
 
-				Console.Logs.log(f'La funzione "{_function.__name__}({_function(*all_positional_arguments, **all_keywords_arguments)})" ha impiegato {execution_time} secondi per eseguire', show_to_console=True)
+				Console.Logs.log(f"La funzione \"{_function.__name__}({_function(*all_positional_arguments, **all_keywords_arguments)})\" ha impiegato {execution_time} secondi per eseguire", show_to_console = True)
 
 				return function_results
 			return wrapper
@@ -311,9 +318,11 @@ class Console:
 			''' Sottoclasse per la gestione degli errori. '''
 
 			@staticmethod
-			def error(error_message: str, *, show_to_console: bool = False, colored_output: bool = False, time_stamp: bool = None) -> None:
-				''' Metodo per la presentazione degli errori non fatali.
-				Per presentare errori fatali usare: "Console.Logs.Errors.fatal_error()". '''
+			def error(error_message: str, /, *, show_to_console: bool = False, colored_output: bool = False, time_stamp: bool = None) -> None:
+				'''
+					Logga un errore non fatale.\n
+					Per presentare errori fatali usare: \"Console.Logs.Errors.fatal_error()\".
+				'''
 
 				if time_stamp is None:
 					time_stamp = Console.do_we_use_time_stamps
@@ -342,9 +351,11 @@ class Console:
 
 			@staticmethod
 			def fatal_error(error_message: str, *, colored_output: bool = False, do_we_write_to_log_file: bool = True) -> None:
-
-				''' Metodo per la presentazione degli errori fatali.
-				Per presentare errori non fatali usare: "Console.Logs.Errors.error()". '''
+				'''
+					Logga un errore fatale e interrompe il programma.\n
+					Per presentare errori non fatali usare: "Console.Logs.Errors.error()".\n
+					Wrapper di: "raise Exception(error_message)".
+				'''
 				if Console.do_we_use_logs is True and do_we_write_to_log_file is True:	# Se i log sono attivi:
 					time_stamp_value = datetime.now().strftime("%H:%M:%S")	#* valore temporale per i log.
 
@@ -380,7 +391,7 @@ class Console:
 
 		@staticmethod
 		def reset() -> None:
-			''' Funzionalità per il riposizionamento del cursore nel terminale. '''
+			''' Riposiziona il cursore nella posizione iniziale. '''
 
 			sys_stdout.write('\033[H')
 			sys_stdout.flush()
@@ -401,7 +412,7 @@ class Console:
 
 	@staticmethod
 	def file_path_input(pre_input_text: str = '') -> str:
-		''' Autocompletatore per i percorsi file '''
+		''' Auto-completatore per i percorsi file '''
 
 		if Dependencies.is_library_imported('prompt_toolkit') is False:
 			Console.Logs.Errors.fatal_error("Mancate il modulo: \"prompt_toolkit\"")
@@ -418,7 +429,7 @@ class Console:
 
 
 		results = prompt(pre_input_text, completer = PathCompleter(only_directories = False, expanduser = True))
-		return results
+		return os.path.normpath(results)
 
 
 # =================================================================================================================== #
@@ -428,8 +439,11 @@ class File:
 
 	def __init__(self, path: str) -> None:
 
-		if  not os.path.exists(path):	# Se il percorso file non esiste:
+		if not os.path.exists(path):	# Se il percorso file non esiste:
 			Console.Logs.Errors.fatal_error(f"Il percorso file: \"{path}\" non esiste")
+
+		if not os.path.isfile(path):	# Se il percorso non punta ad un file:
+			Console.Logs.Errors.fatal_error(f"Il percorso file: \"{path}\" non punta ad un file")
 
 		self.path = os.path.normpath(os.path.realpath(path))
 
@@ -442,6 +456,7 @@ class File:
 		try:
 			with open(self.path, "r") as file:
 				self.content = file.read()
+
 		except Exception as file_reading_error:
 			Console.Logs.Errors.fatal_error(f"Durante la lettura del file \"{self.path}\" si è verificato il seguente errore: \"{file_reading_error}\"")
 
@@ -472,7 +487,7 @@ class File:
 
 
 	def delete(self) -> None:
-		''' Eliminazione del file e dell'istanza associata. '''
+		''' Elimina il file e la sua istanza associata. '''
 
 		os.remove(self.path)	#* Eliminare il file.
 		Console.Logs.log(f'File "{self.path}" eliminato')
@@ -487,8 +502,8 @@ class File:
 	@staticmethod
 	def path_exist(path: str) -> bool:
 		'''
-			Verificare se il percorso esiste.\n
-			(wrapper di \"os.path.exists()\")
+			Ritorna True se il percorso esiste.\n
+			Wrapper di "os.path.exists()".
 		'''
 		return os.path.exists(path)
 
@@ -535,21 +550,28 @@ class File:
 
 	@staticmethod
 	def delete_file_at_path(path: str) -> None:
-		''' Elimina il file al percorso dato, wrapper di \"os.remove()\" '''
+		'''
+			Elimina il file al percorso dato.\n
+			wrapper di "os.remove()".
+		'''
 
 		if not os.path.exists(path):	# Se il percorso non esiste:
 			Console.Logs.Errors.error(f"Impossibile eliminare il \"{path}\" perché non esiste")
+			return
 
-		if os.path.isfile(path):
+		elif os.path.isfile(path):
 			is_file = True
 
-		else:
+		elif os.path.isdir(path):
 			is_file = False
+
+		else:
+			Console.Logs.Errors.fatal_error(f"Il percorso \"{path}\" non è stato riconosciuto ne come file ne come cartella")
 
 		if is_file is True:
 
 			try:
-				os.remove(path)
+				os.remove(path)	#* Eliminazione del file.
 
 			except Exception as file_handling_error:
 				Console.Logs.Errors.fatal_error(f"Durante l'eliminazione del file \"{path}\" si sono verificati i seguenti errori: \"{file_handling_error}\"")
@@ -559,21 +581,24 @@ class File:
 
 		else:
 			try:
-				shutil_remove_tree(path)
+				shutil_remove_tree(path)	#* Eliminazione della cartella.
 
 			except Exception as file_handling_error:
 				Console.Logs.Errors.fatal_error(f"Durante l'eliminazione della cartella \"{path}\" si sono verificati i seguenti errori: \"{file_handling_error}\"")
 
 			else:
-				Console.Logs.log(f"Cartella \"{path}\" eliminato")
+				Console.Logs.log(f"Cartella \"{path}\" eliminata")
 
 
 	@staticmethod
 	def move_file(from_path: str, to_path: str) -> None:
-		''' Muovere il file dal percorso specificato a quello dato. '''
+		''' Sposta il file dal percorso specificato a quello dato. '''
 
 		if not os.path.exists(from_path):	# Se il percorso da muovere non esiste:
 			Console.Logs.Errors.fatal_error(f"Il percorso \"{from_path}\" non esiste")
+
+		if not os.path.isfile(from_path):	# Se il percorso da muovere non rappresenta un file:
+			Console.Logs.Errors.fatal_error(f"Il percorso \"{from_path}\" non rappresenta un file")
 
 		if os.path.exists(to_path):	# Se il percorso di destinazione esiste:
 			Console.Logs.Errors.error(f"Impossibile spostare (\"{from_path}\" -> \"{to_path}\") in quanto gia presente alla destinazione")
@@ -596,9 +621,10 @@ class Web_kit:
 
 	@staticmethod
 	def config(*, statics_path: str = 'statics') -> None:
-		''' Metodo di configurazione della funzionalità Web_kit.
-
-		- È possibile specificare il percorso delle risorse statiche. '''
+		'''
+			Metodo di configurazione della funzionalità Web_kit.\n
+			- È possibile specificare il percorso delle risorse statiche.
+		'''
 
 		if os.path.exists(statics_path):
 			Web_kit.statics_path = statics_path
@@ -842,15 +868,19 @@ class Dependencies:
 		return spec is not None
 
 
-	def is_package_installed(package_name):
+	def is_package_installed(package_name: str, /, *, log: bool = True) -> bool:
+		''' Ritorna vero se un pacchetto Python risulta installato. '''
 
 		try:
 			subprocess.check_output(['pip', 'show', package_name])
-			Console.Logs.log(f"Il pacchetto \"{package_name}\" risulta installato")
+
+			if log is True:
+				Console.Logs.log(f"Il pacchetto \"{package_name}\" risulta installato")
 			return True
 
 		except subprocess.CalledProcessError:
-			Console.Logs.log(f"Il pacchetto \"{package_name}\" non risulta installato")
+			if log is True:
+				Console.Logs.log(f"Il pacchetto \"{package_name}\" non risulta installato")
 			return False
 
 		except Exception as package_installation_error:
@@ -858,33 +888,41 @@ class Dependencies:
 
 
 	@staticmethod
-	def install_library(library_name: str) -> None:
-		''' Installa la libreria data. '''
+	def install_components(components: str | list[str]) -> None:
+		''' Installa componenti Python (librarie e pacchetti) con pip. '''
 
-		Console.Logs.log(f"Inizio installazione della libreria \"{library_name}\"")
+		if isinstance(components, str):
 
-		if Dependencies.is_library_imported(library_name):
-			Console.Logs.Errors.error(f"impossibile installare la libreria \"{library_name}\" perché risulta gia installata")
-			return
+			components = [components]
 
-		try:
-			subprocess.call(["pip", "install", library_name])
+		for component in components:
 
-		except Exception as library_installation_error:
-			Console.Logs.Errors.fatal_error(f"Durante l'installazione della libreria \"{library_name}\" si sono è verificato il seguente errore: \"{library_installation_error}\"")
+			Console.Logs.log(f"Inizio installazione della componente \"{component}\"")
 
-		else:
-			Console.Logs.log(f"Installata la libreria \"{library_name}\"")
+			if Dependencies.is_library_imported(component) or Dependencies.is_package_installed(component, log = False):
+				Console.Logs.Errors.error(f"Impossibile installare la componente \"{component}\" perché risulta gia installata")
+				return
+
+			try:
+				subprocess.call(["pip", "install", component])
+
+			except Exception as library_installation_error:
+				Console.Logs.Errors.fatal_error(f"Durante l'installazione della componente \"{components}\" si sono è verificato il seguente errore: \"{library_installation_error}\"")
+
+			else:
+				Console.Logs.log(f"Installata la componente \"{component}\"")
 
 # =================================================================================================================== #
 
-def create_virtual_environment(virtual_environment_path: str = "./" , virtual_environment_name: str = '.venv'):
+def create_virtual_environment(virtual_environment_path: str = "./" , virtual_environment_name: str = '.venv',*, activate: bool = False) -> None:
 	'''
 		Crea un ambiente virtuale Python e presso il percorso specificato.
 		È possibile specificare in nome dell'ambiente virtuale.
 	'''
 
-	virtual_environment_path = os.path.join(virtual_environment_path, virtual_environment_name)
+	virtual_environment_path = os.path.normpath(os.path.join(virtual_environment_path, virtual_environment_name))
+
+	Console.Logs.log(f"Inizio creazione dell'ambiente virtuale presso \"{virtual_environment_path}\"")
 
 	if os.path.exists(virtual_environment_path):
 		Console.Logs.Errors.fatal_error(f"Il percorso \"{virtual_environment_path}\" esiste gia")
@@ -897,6 +935,21 @@ def create_virtual_environment(virtual_environment_path: str = "./" , virtual_en
 
 	else:
 		Console.Logs.log(f"Creato ambiente virtuale presso \"{virtual_environment_path}\"")
+
+	if activate is True:
+
+		activation_script_path = os.path.normpath(os.path.join(virtual_environment_path, "Scripts", "activate.bat"))
+
+		Console.Logs.log(f"Esecuzione dell script: \"{activation_script_path}\" per l'attivazione dell'ambiente virtuale presso: \"{virtual_environment_path}\"")
+
+		try:
+			subprocess.run([activation_script_path], shell = True)
+
+		except Exception as virtual_environment_activation_error:
+			Console.Logs.Errors.fatal_error(f"Durante l'attivazione dell'ambiente virtuale \"{virtual_environment_path}\" si sono verificati i seguenti errori: \"{virtual_environment_activation_error}\"")
+
+		else:
+			Console.Logs.log(f"Attivato ambiente virtuale presso \"{virtual_environment_path}\"")
 
 
 def compile_file(file_path: str, executable_name: str, icon_path: str = None) -> None:
@@ -950,7 +1003,7 @@ def compile_file(file_path: str, executable_name: str, icon_path: str = None) ->
 
 
 def execute_executable(executable_path: str) -> None:
-	''' Esegue l'eseguibile compilato. '''
+	''' Esegue l'eseguibile dato. '''
 
 	if not os.path.exists(executable_path):
 		Console.Logs.Errors.fatal_error(f"Impossibile eseguire il file: \"{executable_path}\" perché non esiste")
@@ -959,7 +1012,7 @@ def execute_executable(executable_path: str) -> None:
 		Console.Logs.Errors.fatal_error(f"Impossibile eseguire il file: \"{executable_path}\" perché non é un file")
 
 	if not os.access(executable_path, os.X_OK):
-		Console.Logs.Errors.fatal_error(f"Impossibile eseguire il file: \"{executable_path}\" perché non risulta eseguibile")
+		Console.Logs.Errors.fatal_error(f"Impossibile eseguire il file: \"{executable_path}\" perché non risulta accessibile")
 
 	if os.path.splitext(executable_path) == '.exe':
 		Console.Logs.Errors.fatal_error(f"Impossibile eseguire il file: \"{executable_path}\" perché non è un eseguibile")
