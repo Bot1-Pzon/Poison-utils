@@ -2,7 +2,6 @@
 <main class="markdown-body">
 <header>
 <h1>Poison's Utilities</h1>
-
 <p>
 <strong>Poison's Utilities</strong>
 <a href="https://docs.python.org/3/tutorial/modules.html">modulo</a> sviluppato da
@@ -10,9 +9,7 @@
 <a href="https://www.python.org/">python</a> e contiene varie funzionalità.
 </p>
 </header>
-
 <h2>Funzionalità</h2>
-
 <ol>
 <!-- Console -->
 <li>
@@ -23,16 +20,14 @@
 <li>
 <h4>Configurazione della console <code>Console.config()</code></h4>
 <p>
-Metodo di configurazione della funzionalità Console.<br /><br />
-
-È possibile attivare il debug: "<code>Console.config(debug=True)</code>".<br />
-È possibile attivare i logs: "<code>Console.config(logs=True)</code>".<br />
-È possibile specificare il percorso presso il quale si desidera venga creata la cartella
-contenente i file edi log: "<code>Console.config(logs_file_path = "...")</code>". <br />
-È possibile specificare il metodo di pulizia dello schermo compatibile con la console:<br />
-"<code>Console.config(screen_cleaning_method="...")</code>", (sono disponibili
-<code>"auto"</code>, <code>"cls"</code> e <code>"clear"</code>). <br />
-È possibile attivare l'output colorato: "<code>Console.config(colored_output=True)</code>".
+Metodo di configurazione della funzionalità Console.<br />
+Spiegazione dei parametri:<br />
+- debug: Attiva o disattiva la modalità debug.<br />
+- logs: Attiva o disattiva il logging si a file che a terminale.<br />
+- logs_path: Specifica il percorso dove salvare i file di log.<br />
+- do_we_use_time_stamps: Attiva o disattiva le stampe temporali.<br />
+- screen_cleaning_method: Specifica il metodo di pulizia dello schermo.<br />
+- colored_output: Attiva o disattiva la stampa colorata.
 </p>
 </li>
 <li>
@@ -180,7 +175,6 @@ Wrapper di: <code>raise Exception(error_message)</code>.
 <li>
 <h3>Gestione comprensibile dei file <code>File</code></h3>
 <p>Funzionalità per la gestione e interazione con i file.</p>
-
 <ul>
 <li>
 <h4>Inizializzazione di un File <code>File.__init__()</code></h4>
@@ -220,6 +214,10 @@ wrapper di <code>os.remove()</code>.
 <li>
 <h4>Spostamento di un file <code>File.move_file()</code></h4>
 <p>Sposta il file dal percorso specificato a quello dato.</p>
+</li>
+<li>
+<h4>Copiatura di un file<code>File.copy_file()</code></h4>
+<p>Copia il file dal percorso specificato a quello dato.</p>
 </li>
 </ul>
 </li>

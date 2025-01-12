@@ -1,27 +1,41 @@
 '''
-Poison's Utilities
--
-Modulo con varie funzionalità creato da Poison_8o8.
+	Poison's Utilities
+	-
+	Modulo con varie funzionalità creato da Poison_8o8.
 '''
 
 import os
-from sys import exit as sys_exit, stdout as sys_stdout
+
+if __name__ == '__main__':
+
+	print(f"\n\033[31mErrore\033[0m: \033[44m\033[01m{os.path.normpath(os.path.basename(__file__))}\033[0m è un modulo.\nNon dovresti eseguire questo file direttamente.\n")
+	sys_exit()
+
+from sys import (
+	exit as sys_exit,
+	stdout as sys_stdout
+)
+
+from shutil import (
+	move as shutil_move,
+	copy as shutil_copy,
+	rmtree as shutil_remove_tree
+)
+
+from subprocess import (
+	run as run_subprocess,
+	check_output as check_subprocess_output,
+	CalledProcessError
+)
+
 from random import randint as random_integer
 from datetime import datetime	# Per le stampe temporali.
 from importlib.util import find_spec
-from shutil import move as shutil_move, rmtree as shutil_remove_tree
-import subprocess
-
-
-if __name__ == "__main__":
-
-	print(f'\n\033[31mErrore\033[0m: \033[44m\033[01m{os.path.normpath(os.path.basename(__file__))}\033[0m è un modulo.\nNon dovresti eseguire questo file direttamente.\n')
-	sys_exit()
 
 
 # Metadati:
 __doc__ = "docstring w.i.p."
-__version__ = '2.0.2'
+__version__ = '2.0.3'
 
 spell = """Ain't it hard to stumble
 and land in the wrong side of the lagoon,
@@ -44,13 +58,18 @@ class Console:
 
 	@staticmethod
 	def config(*, debug: bool = True,  logs: bool = True, logs_path: str = None, do_we_use_time_stamps: bool = False, screen_cleaning_method: str = "auto", colored_output: bool = True) -> None:
-		''' Metodo di configurazione della funzionalità Console.
+		'''
+			Metodo di configurazione della funzionalità Console.\n
 
-		- È possibile attivare il debug: "Console.config(debug=True)".
-		- È possibile attivare i logs: "Console.config(logs=True)".
-		- È possibile specificare il percorso presso il quale si desidera venga creata la cartella contenente i file edi log: "Console.config(logs_file_path="*")".
-		- È possibile specificare il metodo di pulizia dello schermo compatibile con la console: "Console.config(screen_cleaning_method="*")", (sono disponibili "auto", "cls" e "clear").
-		- È possibile attivare l'output colorato: "Console.config(colored_output=True)". '''
+			Spiegazione dei parametri:\n
+
+			- debug: Attiva o disattiva la modalità debug.\n
+			- logs: Attiva o disattiva il logging si a file che a terminale.\n
+			- logs_path: Specifica il percorso dove salvare i file di log.\n
+			- do_we_use_time_stamps: Attiva o disattiva le stampe temporali.\n
+			- screen_cleaning_method: Specifica il metodo di pulizia dello schermo.\n
+			- colored_output: Attiva o disattiva la stampa colorata.
+		'''
 
 		Console.colored_output = colored_output
 
@@ -58,7 +77,6 @@ class Console:
 			Console.terminal_cleaning_method = screen_cleaning_method
 
 		else:	# Se il metodo di pulizia dello schermo non è fra i supportati:
-
 			Console.Logs.Errors.fatal_error(f"Errore durante l'esecuzione del metodo: \"Console.config()\":\nSono supportati solo i parametri (\"auto\", \"cls\" e \"clear\"), non \"{screen_cleaning_method}\" inserito dall'utente")
 
 		if logs is True:
@@ -127,6 +145,7 @@ class Console:
 		invisible = '\033[08m'
 
 		class fg:
+			''' Colore del testo. '''
 			white = '\033[50m'
 			black = '\033[30m'
 			red = '\033[31m'
@@ -145,6 +164,8 @@ class Console:
 			light_cyan = '\033[96m'
 
 		class bg:
+			''' Colore dello sfondo. '''
+
 			black = '\033[40m'
 			red = '\033[41m'
 			green = '\033[42m'
@@ -415,7 +436,7 @@ class Console:
 		''' Auto-completatore per i percorsi file '''
 
 		if Dependencies.is_library_imported('prompt_toolkit') is False:
-			Console.Logs.Errors.fatal_error("Mancate il modulo: \"prompt_toolkit\"")
+			Dependencies.install_components('prompt_toolkit')
 
 		try:
 			from prompt_toolkit import prompt # type: ignore
@@ -611,6 +632,26 @@ class File:
 
 		else:
 			Console.Logs.log(f"Avvenuto spostamento file: (\"{from_path}\" -> \"{to_path}\")")
+
+
+	@staticmethod
+	def copy_file(from_path: str, to_path: str) -> None:
+		''' Copia il file dal percorso specificato a quello dato. '''
+
+		if not os.path.exists(from_path):	# Se il percorso da copiare non esiste:
+			Console.Logs.Errors.fatal_error(f"Il percorso \"{from_path}\" non esiste")
+
+		if os.path.exists(to_path):	# Se il percorso di destinazione esiste:
+			Console.Logs.Errors.error(f"Impossibile copiare (\"{from_path}\" -> \"{to_path}\") in quanto gia presente alla destinazione")
+
+		try:
+			shutil_copy(from_path, to_path)
+
+		except Exception as file_copying_error:
+			Console.Logs.Errors.fatal_error(f"Durante la copiatura del file (\"{from_path}\" -> \"{to_path}\") si sono verificati i seguenti errori: \"{file_copying_error}\"")
+
+		else:
+			Console.Logs.log(f"Avvenuta copiatura file: (\"{from_path}\" -> \"{to_path}\")")
 
 # =================================================================================================================== #
 
@@ -872,13 +913,13 @@ class Dependencies:
 		''' Ritorna vero se un pacchetto Python risulta installato. '''
 
 		try:
-			subprocess.check_output(['pip', 'show', package_name])
+			check_subprocess_output(['pip', 'show', package_name])
 
 			if log is True:
 				Console.Logs.log(f"Il pacchetto \"{package_name}\" risulta installato")
 			return True
 
-		except subprocess.CalledProcessError:
+		except CalledProcessError:
 			if log is True:
 				Console.Logs.log(f"Il pacchetto \"{package_name}\" non risulta installato")
 			return False
@@ -904,7 +945,7 @@ class Dependencies:
 				return
 
 			try:
-				subprocess.call(["pip", "install", component])
+				run_subprocess(["pip", "install", component])
 
 			except Exception as library_installation_error:
 				Console.Logs.Errors.fatal_error(f"Durante l'installazione della componente \"{components}\" si sono è verificato il seguente errore: \"{library_installation_error}\"")
@@ -928,7 +969,7 @@ def create_virtual_environment(virtual_environment_path: str = "./" , virtual_en
 		Console.Logs.Errors.fatal_error(f"Il percorso \"{virtual_environment_path}\" esiste gia")
 
 	try:
-		subprocess.run(["python", "-m", "venv", virtual_environment_path])
+		run_subprocess(["python", "-m", "venv", virtual_environment_path])
 
 	except Exception as virtual_environment_creation_error:
 		Console.Logs.Errors.fatal_error(f"Durante la creazione dell'ambiente virtuale \"{virtual_environment_path}\" si sono verificati i seguenti errori: \"{virtual_environment_creation_error}\"")
@@ -943,7 +984,7 @@ def create_virtual_environment(virtual_environment_path: str = "./" , virtual_en
 		Console.Logs.log(f"Esecuzione dell script: \"{activation_script_path}\" per l'attivazione dell'ambiente virtuale presso: \"{virtual_environment_path}\"")
 
 		try:
-			subprocess.run([activation_script_path], shell = True)
+			run_subprocess([activation_script_path], shell = True)
 
 		except Exception as virtual_environment_activation_error:
 			Console.Logs.Errors.fatal_error(f"Durante l'attivazione dell'ambiente virtuale \"{virtual_environment_path}\" si sono verificati i seguenti errori: \"{virtual_environment_activation_error}\"")
@@ -987,12 +1028,12 @@ def compile_file(file_path: str, executable_name: str, icon_path: str = None) ->
 	try:
 
 		if icon_path is not None:
-			subprocess.run(["pyinstaller", "./" + file_path, "--onefile", f"--icon={icon_path}", f'--name={executable_name}'])
+			run_subprocess(["pyinstaller", "./" + file_path, "--onefile", f"--icon={icon_path}", f'--name={executable_name}'])
 
 		else:
-			subprocess.run(["pyinstaller", "./" + file_path, "--onefile", f'--name={executable_name}'])
+			run_subprocess(["pyinstaller", "./" + file_path, "--onefile", f'--name={executable_name}'])
 
-	except subprocess.CalledProcessError as called_process_error:
+	except CalledProcessError as called_process_error:
 		Console.Logs.Errors.fatal_error(f"Durante la compilazione del file \"{file_path}\" si sono verificati i seguenti errori: \"{called_process_error}\"")
 
 	except Exception as compilation_error:
@@ -1020,7 +1061,7 @@ def execute_executable(executable_path: str) -> None:
 	Console.Logs.log(f"Inizio esecuzione dell'eseguibile \"{executable_path}\"")
 
 	try:
-		subprocess.run(executable_path)
+		run_subprocess(executable_path)
 
 	except Exception as execution_error:
 		Console.Logs.Errors.fatal_error(f"Durante l'esecuzione dell'eseguibile \"{executable_path}\" si sono verificati i seguenti errori: \"{execution_error}\"")
