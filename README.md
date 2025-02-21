@@ -128,19 +128,19 @@ l'istanza dove la sua funzione è stata chiamata.
 <p>Sottoclasse per la gestione degli errori.</p>
 <ul>
 <li>
-<h6>Errore non fatali <code>Console.Logs.Errors.error()</code></h6>
+<h6>Errore non fatali <code>Console.Logs.error()</code></h6>
 <p>
 Logga un errore non fatale.<br />
 Per presentare errori fatali usare:
-<code>Console.Logs.Errors.fatal_error()</code>.
+<code>Console.Logs.fatal_error()</code>.
 </p>
 </li>
 <li>
-<h6>Errore fatali <code>Console.Logs.Errors.fatal_error()</code></h6>
+<h6>Errore fatali <code>Console.Logs.fatal_error()</code></h6>
 <p>
 Logga un errore fatale e interrompe il programma.<br />
 Per presentare errori non fatali usare:
-<code>Console.Logs.Errors.error()</code>.<br />
+<code>Console.Logs.error()</code>.<br />
 Wrapper di: <code>raise Exception(error_message)</code>.
 </p>
 </li>
