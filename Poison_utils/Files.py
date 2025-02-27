@@ -20,13 +20,23 @@ class File:
 		- Eliminare il file (L'istanza verrà eliminata).
 	'''
 
-	def __init__(self, path: str) -> None:
+	def __init__(self, path: str) -> 'File' | None:
+
 
 		if not os.path.exists(path):	# Se il percorso file non esiste:
-			Console.Logs.fatal_error(f"Il percorso file: \"{path}\" non esiste")
+			try:
+				file = open(path, "x")	#* Crea il file.
+				file.close()
+
+			except Exception as file_handling_error:
+				Console.Logs.fatal_error(f"Durante la creazione del file: \"{path}\" si è verificato il seguente errore:\n\n\"{file_handling_error}\"")
+
+			else:
+				Console.Logs.log(f'File: "{path}" creato')
 
 		if not os.path.isfile(path):	# Se il percorso non punta ad un file:
-			Console.Logs.fatal_error(f"Il percorso file: \"{path}\" non punta ad un file")
+			Console.Logs.error(f"Il percorso file: \"{path}\" non punta ad un file")
+			return
 
 		self.path = os.path.normpath(os.path.realpath(path))
 
@@ -41,7 +51,7 @@ class File:
 				self.content = file.read()
 
 		except Exception as file_reading_error:
-			Console.Logs.fatal_error(f"Durante la lettura del file \"{self.path}\" si è verificato il seguente errore: \"{file_reading_error}\"")
+			Console.Logs.fatal_error(f"Durante la lettura del file \"{self.path}\" si è verificato il seguente errore:\n\n\"{file_reading_error}\"")
 
 
 	def write(self, content: str, binary: bool = False) -> None:
@@ -124,7 +134,7 @@ def create_complete_path(path: str, file_name: str = None) -> "File":
 			file.close()
 
 		except Exception as file_handling_error:
-			Console.Logs.fatal_error(f"Durante la creazione del file: \"{path}\" si è verificato il seguente errore: \"{file_handling_error}\"")
+			Console.Logs.fatal_error(f"Durante la creazione del file: \"{path}\" si è verificato il seguente errore:\n\n\"{file_handling_error}\"")
 
 		else:
 			Console.Logs.log(f'File "{path}" creato')
@@ -132,7 +142,7 @@ def create_complete_path(path: str, file_name: str = None) -> "File":
 
 
 @staticmethod
-def delete_file_at_path(path: str) -> None:
+def delete_file_at_path(path: str, log_it: bool = True) -> None:
 	'''
 		Elimina il file al percorso dato.\n
 		Wrapper di "os.remove()".
@@ -157,20 +167,22 @@ def delete_file_at_path(path: str) -> None:
 			os.remove(path)	#* Eliminazione del file.
 
 		except Exception as file_handling_error:
-			Console.Logs.fatal_error(f"Durante l'eliminazione del file \"{path}\" si sono verificati i seguenti errori: \"{file_handling_error}\"")
+			Console.Logs.fatal_error(f"Durante l'eliminazione del file \"{path}\" si è verificato il seguente errore:\n\n\"{file_handling_error}\"")
 
 		else:
-			Console.Logs.log(f"File \"{path}\" eliminato")
+			if log_it is True:
+				Console.Logs.log(f"File \"{path}\" eliminato")
 
 	else:
 		try:
 			shutil.rmtree(path)	#* Eliminazione della cartella.
 
 		except Exception as file_handling_error:
-			Console.Logs.fatal_error(f"Durante l'eliminazione della cartella \"{path}\" si sono verificati i seguenti errori: \"{file_handling_error}\"")
+			Console.Logs.fatal_error(f"Durante l'eliminazione della cartella \"{path}\" si è verificato il seguente errore:\n\n\"{file_handling_error}\"")
 
 		else:
-			Console.Logs.log(f"Cartella \"{path}\" eliminata")
+			if log_it is True:
+				Console.Logs.log(f"Cartella \"{path}\" eliminata")
 
 
 @staticmethod
@@ -193,7 +205,7 @@ def move_file(from_path: str, to_path: str) -> None:
 		shutil.move(from_path, to_path)
 
 	except Exception as file_handling_error:
-		Console.Logs.fatal_error(f"Durante il movimento del file (\"{from_path}\" -> \"{to_path}\") si sono verificati i seguenti errori: \"{file_handling_error}\"")
+		Console.Logs.fatal_error(f"Durante il movimento del file (\"{from_path}\" -> \"{to_path}\") si è verificato il seguente errore:\n\n\"{file_handling_error}\"")
 
 	else:
 		Console.Logs.log(f"Avvenuto spostamento file: (\"{from_path}\" -> \"{to_path}\")")
@@ -216,7 +228,7 @@ def copy_file(from_path: str, to_path: str) -> None:
 		shutil.copy(from_path, to_path)
 
 	except Exception as file_copying_error:
-		Console.Logs.fatal_error(f"Durante la copiatura del file (\"{from_path}\" -> \"{to_path}\") si sono verificati i seguenti errori: \"{file_copying_error}\"")
+		Console.Logs.fatal_error(f"Durante la copiatura del file (\"{from_path}\" -> \"{to_path}\") si è verificato il seguente errore:\n\n\"{file_copying_error}\"")
 
 	else:
 		Console.Logs.log(f"Avvenuta copiatura file: (\"{from_path}\" -> \"{to_path}\")")

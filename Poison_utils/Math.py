@@ -11,7 +11,7 @@ def factorial(n: int) -> int:
 	''' Ritorna il fattoriale del numero dato. '''
 
 	if n < 0:
-		Console.Logs.fatal_error(f'Il fattoriale di un {n} < 0 non é supportato')
+		Console.Logs.error(f"Il fattoriale di \"{n} < 0\" non é supportato")
 
 	r: int = 1
 	for i in range(1, n + 1):

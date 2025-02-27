@@ -251,7 +251,7 @@ class Console:
 						logs_file.write(message)	#* Scrittura al file.
 
 				except Exception as logs_file_handling_error:
-					Console.Logs.Errors.fatal_error(f"Durante la scrittura nel file di log \"{log_file.path}\" si è verificato il seguente errore: \"{logs_file_handling_error}\"")
+					Console.Logs.Errors.fatal_error(f"Durante la scrittura nel file di log \"{log_file.path}\" si è verificato il seguente errore:\n\n\"{logs_file_handling_error}\"")
 
 
 		@staticmethod
@@ -446,7 +446,7 @@ class Console:
 			Console.Logs.Errors.fatal_error("Mancate il modulo: \"prompt_toolkit\"")
 
 		except Exception as prompt_toolkit_error_import_error:
-			Console.Logs.Errors.fatal_error(f"Durante l'importazione del modulo \"prompt_toolkit\" si sono verificati i seguenti errori: \"{prompt_toolkit_error_import_error}\"")
+			Console.Logs.Errors.fatal_error(f"Durante l'importazione del modulo \"prompt_toolkit\" si è verificati il seguente errore:\n\n\"{prompt_toolkit_error_import_error}\"")
 
 
 		results = prompt(pre_input_text, completer = PathCompleter(only_directories = False, expanduser = True))
@@ -479,7 +479,7 @@ class File:
 				self.content = file.read()
 
 		except Exception as file_reading_error:
-			Console.Logs.Errors.fatal_error(f"Durante la lettura del file \"{self.path}\" si è verificato il seguente errore: \"{file_reading_error}\"")
+			Console.Logs.Errors.fatal_error(f"Durante la lettura del file \"{self.path}\" si è verificato il seguente errore:\n\n\"{file_reading_error}\"")
 
 
 	def write(self, content: str, binary: bool = False) -> None:
@@ -562,7 +562,7 @@ class File:
 				file.close()
 
 			except Exception as file_handling_error:
-				Console.Logs.Errors.fatal_error(f"Durante la creazione del file: \"{path}\" si è verificato il seguente errore: \"{file_handling_error}\"")
+				Console.Logs.Errors.fatal_error(f"Durante la creazione del file: \"{path}\" si è verificato il seguente errore:\n\n\"{file_handling_error}\"")
 
 			else:
 				Console.Logs.log(f'File "{path}" creato')
@@ -595,7 +595,7 @@ class File:
 				os.remove(path)	#* Eliminazione del file.
 
 			except Exception as file_handling_error:
-				Console.Logs.Errors.fatal_error(f"Durante l'eliminazione del file \"{path}\" si sono verificati i seguenti errori: \"{file_handling_error}\"")
+				Console.Logs.Errors.fatal_error(f"Durante l'eliminazione del file \"{path}\" si è verificato il seguente errore:\n\n\"{file_handling_error}\"")
 
 			else:
 				Console.Logs.log(f"File \"{path}\" eliminato")
@@ -605,7 +605,7 @@ class File:
 				shutil_remove_tree(path)	#* Eliminazione della cartella.
 
 			except Exception as file_handling_error:
-				Console.Logs.Errors.fatal_error(f"Durante l'eliminazione della cartella \"{path}\" si sono verificati i seguenti errori: \"{file_handling_error}\"")
+				Console.Logs.Errors.fatal_error(f"Durante l'eliminazione della cartella \"{path}\" si è verificato il seguenti errore:\n\n\"{file_handling_error}\"")
 
 			else:
 				Console.Logs.log(f"Cartella \"{path}\" eliminata")
@@ -628,7 +628,7 @@ class File:
 			shutil_move(from_path, to_path)
 
 		except Exception as file_handling_error:
-			Console.Logs.Errors.fatal_error(f"Durante il movimento del file (\"{from_path}\" -> \"{to_path}\") si sono verificati i seguenti errori: \"{file_handling_error}\"")
+			Console.Logs.Errors.fatal_error(f"Durante il movimento del file (\"{from_path}\" -> \"{to_path}\") si è verificato il seguente errore:\n\n\"{file_handling_error}\"")
 
 		else:
 			Console.Logs.log(f"Avvenuto spostamento file: (\"{from_path}\" -> \"{to_path}\")")
@@ -648,7 +648,7 @@ class File:
 			shutil_copy(from_path, to_path)
 
 		except Exception as file_copying_error:
-			Console.Logs.Errors.fatal_error(f"Durante la copiatura del file (\"{from_path}\" -> \"{to_path}\") si sono verificati i seguenti errori: \"{file_copying_error}\"")
+			Console.Logs.Errors.fatal_error(f"Durante la copiatura del file (\"{from_path}\" -> \"{to_path}\") si è verificato il seguente errore:\n\n\"{file_copying_error}\"")
 
 		else:
 			Console.Logs.log(f"Avvenuta copiatura file: (\"{from_path}\" -> \"{to_path}\")")
@@ -925,7 +925,7 @@ class Dependencies:
 			return False
 
 		except Exception as package_installation_error:
-			Console.Logs.Errors.fatal_error(f"Durante l'installazione del pacchetto \"{package_name}\" si sono verificati i seguenti errori: \"{package_installation_error}\"")
+			Console.Logs.Errors.fatal_error(f"Durante l'installazione del pacchetto \"{package_name}\" si è verificato il seguente errore:\n\n\"{package_installation_error}\"")
 
 
 	@staticmethod
@@ -948,7 +948,7 @@ class Dependencies:
 				run_subprocess(["pip", "install", component])
 
 			except Exception as library_installation_error:
-				Console.Logs.Errors.fatal_error(f"Durante l'installazione della componente \"{components}\" si sono è verificato il seguente errore: \"{library_installation_error}\"")
+				Console.Logs.Errors.fatal_error(f"Durante l'installazione della componente \"{components}\" si è verificato il seguente errore:\n\n\"{library_installation_error}\"")
 
 			else:
 				Console.Logs.log(f"Installata la componente \"{component}\"")
@@ -972,7 +972,7 @@ def create_virtual_environment(virtual_environment_path: str = "./" , virtual_en
 		run_subprocess(["python", "-m", "venv", virtual_environment_path])
 
 	except Exception as virtual_environment_creation_error:
-		Console.Logs.Errors.fatal_error(f"Durante la creazione dell'ambiente virtuale \"{virtual_environment_path}\" si sono verificati i seguenti errori: \"{virtual_environment_creation_error}\"")
+		Console.Logs.Errors.fatal_error(f"Durante la creazione dell'ambiente virtuale \"{virtual_environment_path}\" si è verificato il seguente errore:\n\n\"{virtual_environment_creation_error}\"")
 
 	else:
 		Console.Logs.log(f"Creato ambiente virtuale presso \"{virtual_environment_path}\"")
@@ -987,7 +987,7 @@ def create_virtual_environment(virtual_environment_path: str = "./" , virtual_en
 			run_subprocess([activation_script_path], shell = True)
 
 		except Exception as virtual_environment_activation_error:
-			Console.Logs.Errors.fatal_error(f"Durante l'attivazione dell'ambiente virtuale \"{virtual_environment_path}\" si sono verificati i seguenti errori: \"{virtual_environment_activation_error}\"")
+			Console.Logs.Errors.fatal_error(f"Durante l'attivazione dell'ambiente virtuale \"{virtual_environment_path}\" si è verificato il seguente errore:\n\n\"{virtual_environment_activation_error}\"")
 
 		else:
 			Console.Logs.log(f"Attivato ambiente virtuale presso \"{virtual_environment_path}\"")
@@ -1034,10 +1034,10 @@ def compile_file(file_path: str, executable_name: str, icon_path: str = None) ->
 			run_subprocess(["pyinstaller", "./" + file_path, "--onefile", f'--name={executable_name}'])
 
 	except CalledProcessError as called_process_error:
-		Console.Logs.Errors.fatal_error(f"Durante la compilazione del file \"{file_path}\" si sono verificati i seguenti errori: \"{called_process_error}\"")
+		Console.Logs.Errors.fatal_error(f"Durante la compilazione del file \"{file_path}\" si è verificato il seguente errore:\n\n\"{called_process_error}\"")
 
 	except Exception as compilation_error:
-		Console.Logs.Errors.fatal_error(f"Durante la compilazione del file \"{file_path}\" si sono verificati i seguenti errori: \"{compilation_error}\"")
+		Console.Logs.Errors.fatal_error(f"Durante la compilazione del file \"{file_path}\" si è verificato il seguente errore:\n\n\"{compilation_error}\"")
 
 	else:
 		Console.Logs.log(f"File \"{file_path}\" compilato con successo")
@@ -1064,7 +1064,7 @@ def execute_executable(executable_path: str) -> None:
 		run_subprocess(executable_path)
 
 	except Exception as execution_error:
-		Console.Logs.Errors.fatal_error(f"Durante l'esecuzione dell'eseguibile \"{executable_path}\" si sono verificati i seguenti errori: \"{execution_error}\"")
+		Console.Logs.Errors.fatal_error(f"Durante l'esecuzione dell'eseguibile \"{executable_path}\" si è verificato il seguente errore:\n\n\"{execution_error}\"")
 
 	else:
 		Console.Logs.log(f"L'eseguibile \"{executable_path}\" è stato eseguito con successo")

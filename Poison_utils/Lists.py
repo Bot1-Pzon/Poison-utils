@@ -4,6 +4,7 @@
 
 
 import random
+from typing import Any
 
 
 @staticmethod
@@ -52,7 +53,7 @@ def jenky_sort(List: list[int]) -> list[int]:
 
 
 @staticmethod
-def duplicates_counter(list_to_count: list) -> dict[None: int]:
+def duplicates_counter(list_to_count: list[Any]) -> dict[Any, int]:
     '''
         Ritorna un dizionario come chiavi i vari elementi della lista data e come valori il numero di occorrenze.
     '''

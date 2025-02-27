@@ -163,7 +163,6 @@ class Logs:
 		Logs.logs_files_list.append(Files.File(logs_path))
 
 		Logs.logs_file_path = logs_path
-		do_we_use_logs = True
 
 
 	@staticmethod
@@ -192,7 +191,7 @@ class Logs:
 					logs_file.write(message)	#* Scrittura al file.
 
 			except Exception as logs_file_handling_error:
-				Logs.fatal_error(f"Durante la scrittura nel file di log \"{log_file.path}\" si è verificato il seguente errore: \"{logs_file_handling_error}\"")
+				Logs.fatal_error(f"Durante la scrittura nel file di log \"{log_file.path}\" si è verificato il seguente errore:\n\n\"{logs_file_handling_error}\"")
 
 
 	@staticmethod
@@ -384,7 +383,7 @@ def file_path_input(pre_input_text: str = '') -> str:
 		Logs.fatal_error("Mancate il modulo: \"prompt_toolkit\"")
 
 	except Exception as prompt_toolkit_error_import_error:
-		Logs.fatal_error(f"Durante l'importazione del modulo \"prompt_toolkit\" si sono verificati i seguenti errori: \"{prompt_toolkit_error_import_error}\"")
+		Logs.fatal_error(f"Durante l'importazione del modulo \"prompt_toolkit\" si è verificato il seguente errore:\n\n\"{prompt_toolkit_error_import_error}\"")
 
 
 	results = prompt(pre_input_text, completer = PathCompleter(only_directories = False, expanduser = True))
