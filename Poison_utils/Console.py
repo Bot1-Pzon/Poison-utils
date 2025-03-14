@@ -7,7 +7,7 @@ import sys
 
 import datetime
 
-from Poison_utils import Files
+from Poison_utils import Files, Dependencies
 
 
 global_debug_mode: bool = False
@@ -131,8 +131,8 @@ class Logs:
 
 		initial_time_stamp = datetime.datetime.now().strftime("%d/%m/%Y - %H:%M")
 
-		#TODO: {os.path.realpath(__file__)} Se esiste un metodo mostrare il file principale, non la libreria.
-		time_header = f'< ==== | {initial_time_stamp} | ==== >\nEsecuzione del file: "{os.path.normpath(os.path.realpath(__file__))}".\n\n'
+		main_file_path = os.path.normpath(os.path.realpath(sys.argv[0]))	# Ottieni il percorso del file principale
+		time_header = f'< ==== | {initial_time_stamp} | ==== >\nEsecuzione del file: "{main_file_path}".\n\n'
 
 		if logs_path is None:	# Se il percorso file dei log non è stato impostato:
 			Logs.fatal_error('Specificare il percorso del file di log presso il metodo: "config(logs_file_path=...)"')
@@ -178,6 +178,8 @@ class Logs:
 
 		else:
 			time_stamp_value = time_stamp
+
+		message.replace('\n', ' ')	#* Sostituzione dei caratteri di nuova linea con spazi.
 
 		if end_of_message is None:
 			message = f"\t[{time_stamp_value}] - {message}.\n"
@@ -372,9 +374,8 @@ class Cursor:
 def file_path_input(pre_input_text: str = '') -> str:
 	''' Auto-completatore per i percorsi file '''
 
-	if Dependencies.is_library_imported('prompt_toolkit') is False:
-		Dependencies.install_components('prompt_toolkit')
-
+	if Dependencies.is_library_importable('prompt_toolkit') is False:
+		Dependencies.install_component('prompt_toolkit')
 	try:
 		from prompt_toolkit import prompt # type: ignore
 		from prompt_toolkit.completion import PathCompleter # type: ignore
@@ -382,8 +383,8 @@ def file_path_input(pre_input_text: str = '') -> str:
 	except ModuleNotFoundError:
 		Logs.fatal_error("Mancate il modulo: \"prompt_toolkit\"")
 
-	except Exception as prompt_toolkit_error_import_error:
-		Logs.fatal_error(f"Durante l'importazione del modulo \"prompt_toolkit\" si è verificato il seguente errore:\n\n\"{prompt_toolkit_error_import_error}\"")
+	except Exception as prompt_toolkit_import_error:
+		Logs.fatal_error(f"Durante l'importazione del modulo \"prompt_toolkit\" si è verificato il seguente errore:\n\n\"{prompt_toolkit_import_error}\"")
 
 
 	results = prompt(pre_input_text, completer = PathCompleter(only_directories = False, expanduser = True))

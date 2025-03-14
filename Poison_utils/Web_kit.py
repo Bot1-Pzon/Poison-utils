@@ -8,10 +8,10 @@ import os
 from Poison_utils import Console
 
 
-STATIC_RESOURCES_PATH = None
+STATIC_RESOURCES_PATH: str = None
 
 @staticmethod
-def config(*, statics_path: str = 'statics') -> None:
+def config(statics_path: str = 'statics') -> None:
 	'''
 		Metodo di configurazione della funzionalità Web_kit.\n
 		- È possibile specificare il percorso delle risorse statiche.
@@ -36,15 +36,15 @@ def render_page(page_file_name: str) -> str:
 
 	if not os.path.exists(page_file_path):	# Se il percorso file della pagina non esiste:
 		Console.Logs.error(f"Errore: \"{page_file_path}\" non esiste")
-		return f'Errore: "{page_file_path}" non esiste.'
+		return f'Errore: "W_k.r_p:1".'
 
 	elif not os.path.isfile(page_file_path):	# Se il percorso file della pagina non è un file:
 		Console.Logs.error(f"Errore: \"{page_file_path}\" non è un file")
-		return f'Errore: "{page_file_path}" non è un file.'
+		return f'Errore: "W_k.r_p:2".'
 
 	elif not os.path.splitext()(2) == '.html':	# Se il file non è un documento ".html":
 		Console.Logs.error(f"Errore: \"{page_file_path}\" non è un documento \".html\"")
-		return f'Errore: "{page_file_path}" non è un documento ".html".'
+		return f'Errore: "W_k.r_p:3".'
 
 	else:
 		with open(page_file_path, "r") as page_file:

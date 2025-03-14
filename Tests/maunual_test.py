@@ -1,28 +1,32 @@
+'''
+	Test manuali
+'''
+
+import os
 import sys
 
 import subprocess
 
-sys.path.append('/home/poison_8o8/Pr0gr4ms/Projects/Poison-utils')
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 
 import Poison_utils as pu
 
 pu.Console.config()
 
 
+x = "\tx\n"
 
-if pu.Files.path_exist(".venv"):
+print(x.encode())
+
+""" if pu.Files.path_exist(".venv"):
 	pu.Files.delete_file_at_path(".venv")
 
 input("> ") # Per rendere il test manuale
 
 pu.Console.clear()
 
-Venv = pu.Dependencies.Virtual_environment()
-Venv.activate()
+pu.Dependencies.Virtual_environment.create_virtual_environment()
+pu.Dependencies.Virtual_environment.activate_virtual_environment()
+pu.Dependencies.install_component("requests")
 
-print(pu.Dependencies.is_library_importable("tk"))
-
-pu.Dependencies.install_component("tk")
-
-print(pu.Dependencies.is_library_importable("tk"))
-
+ """

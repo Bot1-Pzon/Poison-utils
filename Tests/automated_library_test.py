@@ -2,9 +2,11 @@
 	Test automatici della libreria Poison_utils.
 '''
 
+import os
 import sys
+import random
 
-sys.path.append('/home/poison_8o8/Pr0gr4ms/Projects/Poison-utils')
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 
 import unittest
 from Poison_utils import Console, Files, Lists, Math, Physics, Web_kit
@@ -13,7 +15,7 @@ from Poison_utils import Console, Files, Lists, Math, Physics, Web_kit
 class Console_Test(unittest.TestCase):
 
 	def test_clear(self):
-		# Test if clear method runs without error
+		''' test if clear method runs without errors '''
 		try:
 			Console.clear()
 		except Exception as screen_cleaning_error:
@@ -36,9 +38,19 @@ class Files_test(unittest.TestCase):
 class Lists_Test(unittest.TestCase):
 
 	def test_create_random_list(self):
-		random_list = Lists.create_random_list(10, 1, 10)
-		self.assertEqual(len(random_list), 10)
-		self.assertTrue(all(1 <= x <= 10 for x in random_list))
+
+		maximum_list_length: int = random.randint(1, 100)
+		minimum_list_length: int = random.randint(0, maximum_list_length)
+		minimum_value: int = random.randint(0, 99)
+		maximum_value: int = random.randint(minimum_value, 99)
+
+		random_list = Lists.create_random_list(
+			list_length_range = (minimum_list_length, maximum_list_length),
+			values_range = (minimum_value, maximum_value)
+		)
+
+		self.assertTrue(minimum_list_length <= len(random_list) <= maximum_list_length)
+		self.assertTrue(all(minimum_value <= x <= maximum_value for x in random_list))
 
 
 	def test_bubble_sort(self):
@@ -77,14 +89,6 @@ class Physics_Test(unittest.TestCase):
 		self.assertEqual(result.measure, 15)
 		self.assertEqual(result.uncertainty, 0.7)
 
-
-""" class TestWebKit(unittest.TestCase):
-
-	def test_config(self):
-		try:
-			Web_kit.config(statics_path='statics')
-		except Exception as e:
-			self.fail(f"Web_kit.config() raised {e}") """
 
 
 if __name__ == '__main__':

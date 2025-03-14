@@ -12,7 +12,7 @@ from .Math import *
 from .Physics import *
 from .Web_kit import *
 
-__version__ = '2.0.3'
+__version__ = '3.0.0'
 
 spell = """Ain't it hard to stumble
 and land in the wrong side of the lagoon

@@ -20,7 +20,7 @@ class File:
 		- Eliminare il file (L'istanza verrà eliminata).
 	'''
 
-	def __init__(self, path: str) -> 'File' | None:
+	def __init__(self, path: str) -> None:
 
 
 		if not os.path.exists(path):	# Se il percorso file non esiste:
@@ -55,27 +55,26 @@ class File:
 
 
 	def write(self, content: str, binary: bool = False) -> None:
-		''' Scrive all'istanza file. '''
 
 		self.content = content
 
 		if binary is True:
 			writing_method = "wb"
 			encoding = None
-			content = bytes(self.content, 'utf-8')
+			content = content.encode()
 
 		else:
 			writing_method = "w"
 			encoding = 'utf-8'
 
 		with open(self.path, writing_method, encoding = encoding) as file:
-			file.write(content)
+			file.write(content)	#* Scrittura a file.
 
-		content = rf"{content}"
 		if len(content) > 25:
 			Console.Logs.log(f"Scrittura al file \"{self.path}\" completata")
 
 		else:
+			content = content.encode()
 			Console.Logs.log(f"Scrittura di \"{content}\" al file \"{self.path}\" completata")
 
 
@@ -92,7 +91,6 @@ class File:
 		return f"[{self.name} -> '{self.path}']"
 
 
-@staticmethod
 def path_exist(path: str) -> bool:
 	'''
 		Ritorna True se il percorso esiste.\n
@@ -101,7 +99,6 @@ def path_exist(path: str) -> bool:
 	return os.path.exists(path)
 
 
-@staticmethod
 def create_complete_path(path: str, file_name: str = None) -> "File":
 	'''
 		Crea il percorso completo di cartelle e file.\n
@@ -130,7 +127,7 @@ def create_complete_path(path: str, file_name: str = None) -> "File":
 
 	else:
 		try:
-			file = open(path, "x")
+			file = open(path, "x")	#* Creazione del file.
 			file.close()
 
 		except Exception as file_handling_error:
@@ -141,10 +138,10 @@ def create_complete_path(path: str, file_name: str = None) -> "File":
 			return File(path)
 
 
-@staticmethod
 def delete_file_at_path(path: str, log_it: bool = True) -> None:
 	'''
-		Elimina il file al percorso dato.\n
+		Elimina il file o la cartella al percorso dato.
+
 		Wrapper di "os.remove()".
 	'''
 
@@ -177,15 +174,14 @@ def delete_file_at_path(path: str, log_it: bool = True) -> None:
 		try:
 			shutil.rmtree(path)	#* Eliminazione della cartella.
 
-		except Exception as file_handling_error:
-			Console.Logs.fatal_error(f"Durante l'eliminazione della cartella \"{path}\" si è verificato il seguente errore:\n\n\"{file_handling_error}\"")
+		except Exception as directory_elimination_error:
+			Console.Logs.fatal_error(f"Durante l'eliminazione della cartella \"{path}\" si è verificato il seguente errore:\n\n\"{directory_elimination_error}\"")
 
 		else:
 			if log_it is True:
 				Console.Logs.log(f"Cartella \"{path}\" eliminata")
 
 
-@staticmethod
 def move_file(from_path: str, to_path: str) -> None:
 	'''
 		Sposta il file dal percorso specificato a quello dato.
@@ -211,7 +207,6 @@ def move_file(from_path: str, to_path: str) -> None:
 		Console.Logs.log(f"Avvenuto spostamento file: (\"{from_path}\" -> \"{to_path}\")")
 
 
-@staticmethod
 def copy_file(from_path: str, to_path: str) -> None:
 	'''
 		Copia il file del percorso specificato a quello dato.

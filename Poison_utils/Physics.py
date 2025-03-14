@@ -4,9 +4,12 @@
 
 from Poison_utils import Console
 
-SUPPORTED_UTNITS: tuple[14] = ('km', 'hm', 'dam', 'm', 'dm', 'cm', 'mm', 'km²', 'hm²', 'dam²', 'm²', 'dm²', 'cm²', 'mm²')
+SUPPORTED_UNITS: tuple[14] = ('km', 'hm', 'dam', 'm', 'dm', 'cm', 'mm', 'km²', 'hm²', 'dam²', 'm²', 'dm²', 'cm²', 'mm²')
 
 class Measure:
+	'''
+		Classe per rappresentare e interagire con misure fisiche con incertezze.
+	'''
 
 
 	def __init__(self, measure: int | float, uncertainty: int | float, unit: str) -> None:
@@ -20,7 +23,7 @@ class Measure:
 		if not isinstance(unit, str):
 			Console.Logs.fatal_error(f"L'unità \"{unit}\" non è una stringa supportata")
 
-		if unit not in SUPPORTED_UTNITS:
+		if unit not in SUPPORTED_UNITS:
 			Console.Logs.fatal_error(f"L'unità \"{unit}\" non è supportata")
 
 		self.measure = measure
