@@ -40,7 +40,7 @@ class Lists_Test(unittest.TestCase):
 	def test_create_random_list(self):
 
 		maximum_list_length: int = random.randint(1, 100)
-		minimum_list_length: int = random.randint(0, maximum_list_length)
+		minimum_list_length: int = random.randint(1, maximum_list_length)
 		minimum_value: int = random.randint(0, 99)
 		maximum_value: int = random.randint(minimum_value, 99)
 
@@ -78,6 +78,12 @@ class Math_Test(unittest.TestCase):
 	def test_is_prime(self):
 		self.assertTrue(Math.is_prime(7))
 		self.assertFalse(Math.is_prime(4))
+
+
+	def test_distance(self):
+		P = Math.Point(20, 99)
+		distance = Math.Point.calculate_distance(Math.O, P)
+		self.assertAlmostEqual(distance, 101)
 
 
 class Physics_Test(unittest.TestCase):
