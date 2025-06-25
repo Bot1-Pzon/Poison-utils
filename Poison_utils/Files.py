@@ -20,6 +20,11 @@ class File:
 		- Eliminare il file (L'istanza verrà eliminata).
 	'''
 
+	path: str = None
+	name: str = None
+	extension: str  = None
+	directory_name: str	 = None
+
 	def __init__(self, path: str) -> None:
 
 
@@ -227,3 +232,15 @@ def copy_file(from_path: str, to_path: str) -> None:
 
 	else:
 		Console.Logs.log(f"Avvenuta copiatura file: (\"{from_path}\" -> \"{to_path}\")")
+
+
+def get_file_extension(file_path: str) -> str:
+	'''
+		Ritorna l'estensione del file al percorso specificato.
+		Se il percorso non punta ad un file ritorna una stringa vuota.
+	'''
+
+	if not os.path.isfile(file_path):	# Se il percorso non punta ad un file:
+		return ""
+
+	return os.path.splitext(file_path)[1]	#* Ritorna l'estensione del file.

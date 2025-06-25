@@ -16,7 +16,6 @@ global_use_of_time_stamps: bool = False
 global_colored_output: bool = None
 
 
-@staticmethod
 def config(*, debug: bool = True,  logs: bool = True, logs_path: str = None, do_we_use_time_stamps: bool = False, colored_output: bool = True) -> None:
 	'''
 		Metodo di configurazione della funzionalità \n
@@ -46,7 +45,6 @@ def config(*, debug: bool = True,  logs: bool = True, logs_path: str = None, do_
 	global_use_of_time_stamps = do_we_use_time_stamps
 
 
-@staticmethod
 def clear() -> None:
 	'''
 		Pulisce il terminale.\n
@@ -63,7 +61,6 @@ def clear() -> None:
 		Logs.fatal_error(f'Nel sistema operativo \"{os.name}\" la pulizia dello schermo non è supportata')
 
 
-@staticmethod
 def stop() -> None:
 	'''
 		Arresta il programma.\n
@@ -370,15 +367,18 @@ class Cursor:
 			sys.stdout.flush()
 
 
-@staticmethod
 def file_path_input(pre_input_text: str = '') -> str:
-	''' Auto-completatore per i percorsi file '''
+	'''
+		Auto-completatore per i percorsi file.\n
+		Necessita del modulo "prompt_toolkit" per funzionare correttamente.
+	'''
 
 	if Dependencies.is_library_importable('prompt_toolkit') is False:
 		Dependencies.install_component('prompt_toolkit')
+
 	try:
-		from prompt_toolkit import prompt # type: ignore
-		from prompt_toolkit.completion import PathCompleter # type: ignore
+		from prompt_toolkit import prompt
+		from prompt_toolkit.completion import PathCompleter
 
 	except ModuleNotFoundError:
 		Logs.fatal_error("Mancate il modulo: \"prompt_toolkit\"")
@@ -386,6 +386,6 @@ def file_path_input(pre_input_text: str = '') -> str:
 	except Exception as prompt_toolkit_import_error:
 		Logs.fatal_error(f"Durante l'importazione del modulo \"prompt_toolkit\" si è verificato il seguente errore:\n\n\"{prompt_toolkit_import_error}\"")
 
-
-	results = prompt(pre_input_text, completer = PathCompleter(only_directories = False, expanduser = True))
-	return os.path.normpath(results)
+	else:
+		results = prompt(pre_input_text, completer = PathCompleter(only_directories = False, expanduser = True))
+		return os.path.normpath(results)

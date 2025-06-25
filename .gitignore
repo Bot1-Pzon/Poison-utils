@@ -1,7 +1,5 @@
-__pycache__
-.vscode/
-test.py
-info.html
-Logs
-github-markdown.css
-note.txt
+.*
+!.gitignore
+
+*.log
+*.pyc
