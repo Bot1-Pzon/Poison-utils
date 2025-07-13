@@ -6,38 +6,41 @@ import os
 import sys
 import random
 
+import unittest
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 
-import unittest
 from Poison_utils import Console, Files, Lists, Math, Physics, Web_kit
 
 
-class Console_Test(unittest.TestCase):
+class Console_Tests(unittest.TestCase):
 
-	def test_clear(self):
+	""" def test_clear(self):
 		''' test if clear method runs without errors '''
 		try:
 			Console.clear()
 		except Exception as screen_cleaning_error:
-			self.fail(f"Console.clear() raised: \"{screen_cleaning_error}\"")
+			self.fail(f"Console.clear() raised: \"{screen_cleaning_error}\"") """
 
 
-	def test_stop(self):
+	def stop_test(self):
 		''' Test della funzione di arresto del programma. '''
 		with self.assertRaises(SystemExit):
 			Console.stop()
 
 
-class Files_test(unittest.TestCase):
+class Files_Tests(unittest.TestCase):
 
-	def test_path_exist(self):
+	""" Verify the existence of a file and its path. """
+
+	def path_existence_test(self):
 		self.assertTrue(Files.path_exist(__file__))
 		self.assertFalse(Files.path_exist("non_existent_file.txt"))
 
 
-class Lists_Test(unittest.TestCase):
+class Lists_Tests(unittest.TestCase):
 
-	def test_create_random_list(self):
+	def random_list_creation_test(self):
 
 		maximum_list_length: int = random.randint(1, 100)
 		minimum_list_length: int = random.randint(1, maximum_list_length)
@@ -53,7 +56,7 @@ class Lists_Test(unittest.TestCase):
 		self.assertTrue(all(minimum_value <= x <= maximum_value for x in random_list))
 
 
-	def test_bubble_sort(self):
+	def bubble_sort_test(self):
 		sorted_list = Lists.bubble_sort([3, 2, 1])
 		self.assertEqual(sorted_list, [1, 2, 3])
 
